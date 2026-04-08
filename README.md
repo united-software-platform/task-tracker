@@ -1,51 +1,36 @@
-# Task Tracker — Система тайм-трекинга задач
+# Task Tracker — Система управления задачами
 
 ## Описание
 
-Система для учёта времени по задачам с двусторонней синхронизацией через Google Sheets.
-Позволяет фиксировать затраченное время, управлять задачами и получать актуальные данные
-в Google Sheets через webhook-интеграцию на базе RabbitMQ.
+Система для управления задачами с иерархической структурой на основе алгоритма Nested Sets.
+Поддерживает вложенность задач (Эпик → Стори → Задача) и типизацию через справочник типов.
 
 ## Стек
 
-| Компонент     | Технология              | Назначение                                      |
-|---------------|-------------------------|-------------------------------------------------|
-| База данных   | PostgreSQL 16           | Основное хранилище задач, трекингов, пользователей |
-| Миграции      | Liquibase               | Версионирование схемы БД                        |
-| Брокер        | RabbitMQ 3.13           | Синхронизация данных, обработка хуков Google Sheets |
-| Окружение     | Docker / Docker Compose | Локальная разработка                            |
-
-## Архитектура
-
-```
-Google Sheets
-    │
-    │  webhook (hook-events)
-    ▼
-[RabbitMQ]──────────────────────────────────┐
-    │                                        │
-    │  consume                               │  publish
-    ▼                                        │
-[Consumer Service]                    [Publisher Service]
-    │                                        ▲
-    │  read/write                            │ changes
-    ▼                                        │
-[PostgreSQL] ───────────────────────────────┘
-```
+| Компонент   | Технология              | Назначение                          |
+|-------------|-------------------------|-------------------------------------|
+| База данных | PostgreSQL 16           | Основное хранилище задач            |
+| Миграции    | Liquibase 4.27          | Версионирование схемы БД            |
+| Брокер      | RabbitMQ 3.13           | Обмен сообщениями между сервисами   |
+| Окружение   | Docker / Docker Compose | Локальная разработка                |
 
 ## Структура проекта
 
 ```
-task-trecker/
+task-tracker/
 ├── docker/
 │   ├── docker-compose.yml       # Локальное окружение
-│   ├── docker-compose.override.yml
 │   └── .env.example
 ├── migrations/
 │   ├── changelog/
 │   │   └── db.changelog-master.xml
 │   └── sql/
-│       └── 001_init_schema.sql
+│       ├── Version20260408120000_create_core.sql
+│       ├── Version20260408120001_create_core_tasks.sql
+│       ├── Version20260408120002_add_core_tasks.sql
+│       ├── Version20260408120003_update_core_tasks.sql
+│       ├── Version20260408120004_create_core_types.sql
+│       └── Version20260408120005_insert_core_types.sql
 ├── docs/
 │   └── schema.md                # Описание схемы данных
 └── README.md
@@ -61,21 +46,10 @@ cp docker/.env.example docker/.env
 docker compose -f docker/docker-compose.yml up -d
 
 # Применить миграции
-docker compose -f docker/docker-compose.yml run --rm liquibase update
+docker compose -f docker/docker-compose.yml --profile migrate run --rm liquibase
 ```
-
-## Очереди RabbitMQ
-
-| Exchange              | Queue                        | Назначение                          |
-|-----------------------|------------------------------|-------------------------------------|
-| `sheets.hooks`        | `sheets.task.created`        | Создание задачи из Google Sheets    |
-| `sheets.hooks`        | `sheets.task.updated`        | Обновление задачи из Google Sheets  |
-| `tracker.events`      | `tracker.sync.sheets`        | Публикация изменений в Google Sheets |
 
 ## Схема данных (кратко)
 
-- `users` — пользователи системы
-- `projects` — проекты
-- `tasks` — задачи (привязка к проекту, исполнителю)
-- `time_entries` — записи трекинга времени
-- `sync_log` — лог синхронизации с Google Sheets
+- `core.types` — справочник типов задач (Задача, Стори, Эпик)
+- `core.tasks` — задачи с иерархией через Nested Sets
