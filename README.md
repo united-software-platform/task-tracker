@@ -12,42 +12,84 @@ REQ-CONTROL СТР — централизованная система, обес
 
 ## Стек
 
-| Компонент   | Технология              | Назначение                                  |
-|-------------|-------------------------|---------------------------------------------|
-| База данных | PostgreSQL 16           | Хранилище требований и связанных сущностей  |
-| Миграции    | Liquibase 4.27          | Версионирование схемы БД                    |
-| Брокер      | RabbitMQ 3.13           | Обмен событиями между сервисами             |
-| Окружение   | Docker / Docker Compose | Локальная разработка                        |
+| Компонент       | Технология              | Назначение                                  |
+|-----------------|-------------------------|---------------------------------------------|
+| Backend         | PHP 8.3                 | Бизнес-логика приложения                    |
+| База данных     | PostgreSQL 16           | Хранилище требований и связанных сущностей  |
+| Миграции        | Liquibase 4.27          | Версионирование схемы БД                    |
+| Брокер          | RabbitMQ 3.13           | Обмен событиями между сервисами             |
+| Окружение       | Docker / Docker Compose | Локальная разработка                        |
+| Зависимости     | Composer 2              | Управление PHP-пакетами                     |
 
 ## Структура проекта
 
 ```
 req-control/
 ├── docker/
-│   ├── docker-compose.yml       # Локальное окружение
-│   └── .env.example
+│   └── php/
+│       └── Dockerfile           # PHP 8.3-cli-alpine + Composer
 ├── migrations/
 │   ├── changelog/
 │   │   └── db.changelog-master.xml
-│   └── sql/
-│       └── ...                  # Liquibase SQL-миграции
-├── docs/
-│   └── schema.md                # Описание схемы данных
-└── README.md
+│   └── sql/                     # Liquibase SQL-миграции
+├── src/                         # Исходный код приложения (PSR-4: App\)
+├── tests/
+│   ├── Unit/                    # Юнит-тесты
+│   └── Integration/             # Интеграционные тесты
+├── docs/                        # Документация
+├── data/                        # Тома БД и брокера (не в git)
+├── docker-compose.yml
+├── .env.example
+├── Makefile
+├── composer.json
+├── phpstan.neon
+├── .php-cs-fixer.php
+└── phpunit.xml
 ```
 
 ## Быстрый старт
 
 ```bash
-# Скопировать переменные окружения
-cp docker/.env.example docker/.env
-
-# Поднять окружение
-docker compose -f docker/docker-compose.yml up -d
-
-# Применить миграции
-docker compose -f docker/docker-compose.yml --profile migrate run --rm liquibase
+make init
 ```
+
+Команда выполняет:
+1. Создаёт директории `var/`, `data/`
+2. Копирует `.env.example` → `.env`
+3. Поднимает контейнеры
+4. Устанавливает зависимости Composer
+
+### Применить миграции БД
+
+```bash
+docker compose --profile migrate run --rm liquibase
+```
+
+## Команды разработки
+
+```bash
+make up               # Запустить контейнеры
+make down             # Остановить контейнеры
+make restart          # Перезапустить контейнеры
+make shell            # Войти в PHP-контейнер
+
+make test             # Запустить тесты (PHPUnit)
+make analyse          # Статический анализ (PHPStan, уровень 8)
+make check-style      # Проверить стиль кода (PHP-CS-Fixer, dry-run)
+make fix-style        # Исправить стиль кода
+make code-setup       # Анализ + исправление стиля
+
+make composer-install # composer install
+make composer-update  # composer update
+```
+
+## Инструменты качества кода
+
+| Инструмент    | Версия | Назначение                    |
+|---------------|--------|-------------------------------|
+| PHPStan       | ^2.1   | Статический анализ (level 8)  |
+| PHP-CS-Fixer  | ^3.70  | Форматирование кода (PSR-12)  |
+| PHPUnit       | ^12.1  | Тестирование                  |
 
 ## Модель трассируемости
 
@@ -63,4 +105,4 @@ docker compose -f docker/docker-compose.yml --profile migrate run --rm liquibase
 
 ## Документация
 
-- [Схема данных](docs/schema.md)
+- [Схема данных](docs/database/schema.sql)
