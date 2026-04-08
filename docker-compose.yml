@@ -1,5 +1,3 @@
-version: "3.9"
-
 services:
   postgres:
     image: postgres:16-alpine
@@ -12,7 +10,7 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - ./data/postgres:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
       interval: 5s
@@ -31,12 +29,28 @@ services:
       - "5672:5672"
       - "15672:15672"    # Management UI
     volumes:
-      - rabbitmq_data:/var/lib/rabbitmq
+      - ./data/rabbitmq:/var/lib/rabbitmq
     healthcheck:
       test: ["CMD", "rabbitmq-diagnostics", "ping"]
       interval: 10s
       timeout: 5s
       retries: 10
+
+  php:
+    build:
+      context: .
+      dockerfile: docker/php/Dockerfile
+    container_name: reqcontrol_php
+    restart: unless-stopped
+    working_dir: /app
+    volumes:
+      - .:/app
+    command: sleep infinity
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
 
   liquibase:
     image: liquibase/liquibase:4.27
@@ -50,11 +64,8 @@ services:
       LIQUIBASE_COMMAND_PASSWORD: ${LIQUIBASE_PASSWORD}
       LIQUIBASE_COMMAND_CHANGELOG_FILE: changelog/db.changelog-master.xml
     volumes:
-      - ../migrations:/liquibase/changelog
+      - ./migrations:/liquibase/changelog
     command: update
     profiles:
       - migrate
 
-volumes:
-  postgres_data:
-  rabbitmq_data:

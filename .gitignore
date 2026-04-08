@@ -4,3 +4,19 @@ docker/.env
 .DS_Store
 .idea/
 .claude/settings.local.json
+
+# PHP
+vendor/
+composer.lock
+
+# Env
+.env
+
+# Docker data volumes
+data/postgres/
+data/rabbitmq/
+
+# PHP tools cache
+.php-cs-fixer.cache
+.phpunit.cache/
+var/
