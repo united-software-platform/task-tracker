@@ -2,7 +2,9 @@
 name: Liquibase Migration Generator
 description: "Generates Liquibase .sql migration files for PostgreSQL. Use when user asks to create schema, create table, add column, or update column. Triggers: создай миграцию, создай схему, создай таблицу, добавь колонку, обнови колонку, migration."
 allowed-tools:
+  - Read
   - Write
+  - Edit
   - Glob
   - Grep
 ---
@@ -33,7 +35,8 @@ allowed-tools:
 5. Сформировать имя файла по шаблону.
 6. Сгенерировать содержимое `.sql` файла.
 7. Write файл в `migrations/sql/`.
-8. Сообщить пользователю: имя файла и полный путь.
+8. Актуализировать `docs/database/schema.sql` согласно правилам раздела **Актуализация docs/database/schema.sql**.
+9. Сообщить пользователю: имя файла миграции и что схема обновлена.
 
 ## Правила уточнения
 
@@ -73,7 +76,7 @@ Version{timestamp}_{action}_{schema}_{table}.sql
 ## Путь сохранения
 
 ```
-/home/llm-station/Project/Process/task-trecker/migrations/sql/
+/home/llm-station/Project/Process/req-control/migrations/sql/
 ```
 
 ## Формат генерируемого .sql файла
@@ -185,6 +188,71 @@ ALTER TABLE core.tasks
 ALTER TABLE core.orders
     ALTER COLUMN status SET DEFAULT 'PENDING';
 ```
+
+## Актуализация docs/database/schema.sql
+
+После записи файла миграции **обязательно** обновить `docs/database/schema.sql`.
+
+Файл расположен по пути:
+```
+/home/llm-station/Project/Process/req-control/docs/database/schema.sql
+```
+
+### Порядок действий
+
+1. Read `docs/database/schema.sql` — прочитать текущее содержимое.
+2. Применить изменение согласно таблице ниже.
+3. Edit — сохранить только изменённый фрагмент (не перезаписывать файл целиком).
+
+### Правила изменений по action
+
+| action          | Что менять в schema.sql |
+|-----------------|-------------------------|
+| `create schema` | Добавить строку `CREATE SCHEMA IF NOT EXISTS {schema};` в блок `-- Schema`. |
+| `create table`  | Добавить полный блок `CREATE TABLE` с разделителем `-- ---…` и заголовочным комментарием. Добавить FK-ограничения и индексы внутри блока таблицы. Добавить запись в раздел `## Relationships`. |
+| `add column`    | Вставить новую строку колонки в нужный `CREATE TABLE` блок. Выровнять по существующим колонкам. Если добавляется FK — добавить `CONSTRAINT` в тот же блок и запись в `## Relationships`. |
+| `update column` | Найти и изменить нужную строку колонки: тип, DEFAULT, NOT NULL, имя. Если добавляется/удаляется FK — обновить блок `CONSTRAINT` и раздел `## Relationships`. |
+| `create schema` + `create table` вместе | Применить оба правила последовательно. |
+
+### Формат блока таблицы в schema.sql
+
+```sql
+-- -----------------------------------------------------------------------------
+-- TABLE {schema}.{table}
+-- {описание на русском}
+-- -----------------------------------------------------------------------------
+
+CREATE TABLE {schema}.{table} (
+    id          BIGSERIAL       PRIMARY KEY,
+    col1        TYPE            NOT NULL,    -- комментарий если неочевидно
+    ...
+    created_at  TIMESTAMPTZ     NOT NULL DEFAULT NOW(),
+    updated_at  TIMESTAMPTZ     NOT NULL DEFAULT NOW(),
+
+    CONSTRAINT fk_{table}_{col}
+        FOREIGN KEY ({col})
+            REFERENCES {ref_schema}.{ref_table}({ref_col})
+            ON DELETE RESTRICT
+            ON UPDATE CASCADE
+);
+
+CREATE INDEX idx_{schema}_{table}_{col} ON {schema}.{table} ({col});
+```
+
+### Формат записи в ## Relationships
+
+```
+-- {schema}.{ref_table}.{ref_col}  ←  {schema}.{table}.{col}   (one-to-many)
+--   {описание связи}.
+--   ON DELETE RESTRICT / CASCADE — {причина выбора}.
+--   ON UPDATE CASCADE.
+```
+
+### Запрещено
+
+- Удалять или переписывать не изменённые блоки таблиц.
+- Менять раздел `## Relationships` для таблиц, которых не касается текущая миграция.
+- Добавлять `ON DELETE CASCADE` без явного указания в запросе — по умолчанию использовать `RESTRICT`.
 
 ## Best Practices
 

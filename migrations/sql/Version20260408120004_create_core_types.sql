@@ -1,4 +1,4 @@
-п--liquibase formatted sql
+--liquibase formatted sql
 
 --changeset auto:create-core-types labels:create comment:Создание таблицы types в схеме core
 --preconditions onFail:MARK_RAN
