@@ -3,4 +3,4 @@ docker/.env
 *.log
 .DS_Store
 .idea/
-.claude/
+.claude/settings.local.json
