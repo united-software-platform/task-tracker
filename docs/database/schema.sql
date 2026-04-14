@@ -102,8 +102,103 @@ CREATE INDEX idx_core_tasks_status   ON core.tasks (status);
 
 
 -- -----------------------------------------------------------------------------
+-- TABLE core.functional_requirements
+-- Функциональные требования к системе.
+-- -----------------------------------------------------------------------------
+
+CREATE TABLE core.functional_requirements (
+    id          BIGSERIAL       PRIMARY KEY,
+    code        VARCHAR(20)     NOT NULL UNIQUE,    -- пример: FT-001
+    description TEXT            NOT NULL,
+    created_at  TIMESTAMPTZ     NOT NULL DEFAULT NOW(),
+    updated_at  TIMESTAMPTZ     NOT NULL DEFAULT NOW()
+);
+
+
+-- -----------------------------------------------------------------------------
+-- TABLE core.business_requirements
+-- Бизнес-требования к системе.
+-- -----------------------------------------------------------------------------
+
+CREATE TABLE core.business_requirements (
+    id          BIGSERIAL       PRIMARY KEY,
+    code        VARCHAR(20)     NOT NULL UNIQUE,    -- пример: BT-001
+    description TEXT            NOT NULL,
+    created_at  TIMESTAMPTZ     NOT NULL DEFAULT NOW(),
+    updated_at  TIMESTAMPTZ     NOT NULL DEFAULT NOW()
+);
+
+
+-- -----------------------------------------------------------------------------
+-- TABLE core.projects
+-- Проекты.
+-- -----------------------------------------------------------------------------
+
+CREATE TABLE core.projects (
+    id          BIGSERIAL       PRIMARY KEY,
+    code        VARCHAR(20)     NOT NULL UNIQUE,    -- пример: PRJ-001
+    description TEXT            NOT NULL,
+    created_at  TIMESTAMPTZ     NOT NULL DEFAULT NOW(),
+    updated_at  TIMESTAMPTZ     NOT NULL DEFAULT NOW()
+);
+
+
+-- -----------------------------------------------------------------------------
+-- TABLE core.entity_types
+-- Справочник типов сущностей системы.
+-- -----------------------------------------------------------------------------
+
+CREATE TABLE core.entity_types (
+    id         BIGSERIAL       PRIMARY KEY,
+    type       VARCHAR(50)     NOT NULL UNIQUE,
+    created_at TIMESTAMPTZ     NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ     NOT NULL DEFAULT NOW()
+);
+
+
+-- -----------------------------------------------------------------------------
+-- TABLE core.project_entities
+-- Таблица связи проекта с сущностями (полиморфная: entity_type_id + entity_id).
+-- -----------------------------------------------------------------------------
+
+CREATE TABLE core.project_entities (
+    id             BIGSERIAL       PRIMARY KEY,
+    project_id     BIGINT          NOT NULL,
+    entity_type_id BIGINT          NOT NULL,
+    entity_id      BIGINT          NOT NULL,               -- id сущности в соответствующей таблице
+    created_at     TIMESTAMPTZ     NOT NULL DEFAULT NOW(),
+    updated_at     TIMESTAMPTZ     NOT NULL DEFAULT NOW(),
+
+    CONSTRAINT fk_project_entities_project_id
+        FOREIGN KEY (project_id)
+            REFERENCES core.projects(id)
+            ON DELETE RESTRICT
+            ON UPDATE CASCADE,
+
+    CONSTRAINT fk_project_entities_entity_type_id
+        FOREIGN KEY (entity_type_id)
+            REFERENCES core.entity_types(id)
+            ON DELETE RESTRICT
+            ON UPDATE CASCADE
+);
+
+CREATE INDEX idx_core_project_entities_project_id     ON core.project_entities (project_id);
+CREATE INDEX idx_core_project_entities_entity_type_id ON core.project_entities (entity_type_id);
+CREATE INDEX idx_core_project_entities_entity_id      ON core.project_entities (entity_id);
+
+
+-- -----------------------------------------------------------------------------
 -- SEED core.statuses
 -- -----------------------------------------------------------------------------
+
+INSERT INTO core.entity_types (type) VALUES
+    ('ft'),
+    ('bt'),
+    ('epic'),
+    ('story'),
+    ('task'),
+    ('project');
+
 
 INSERT INTO core.statuses (id, name) VALUES
     (1, 'Новая'),
