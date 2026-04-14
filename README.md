@@ -34,7 +34,12 @@ req-control/
 ├── src/                         # Исходный код приложения (PSR-4: App\)
 ├── tests/
 │   └── Unit/                    # Юнит-тесты
-├── docs/                        # Документация
+├── docs/
+│   ├── database/
+│   │   └── schema.sql           # Эталонная схема БД
+│   ├── tasks/                   # Постановки задач
+│   ├── schema.toon              # Компактное описание схемы
+│   └── REQ Control system.jpg  # Диаграмма модели данных
 ├── data/                        # Тома БД и брокера (не в git)
 ├── docker-compose.yml
 ├── .env.example
@@ -60,7 +65,7 @@ make init
 ### Применить миграции БД
 
 ```bash
-docker compose --profile migrate run --rm liquibase
+make migrate
 ```
 
 ## Команды разработки
@@ -71,7 +76,10 @@ make down             # Остановить контейнеры
 make restart          # Перезапустить контейнеры
 make shell            # Войти в PHP-контейнер
 
+make migrate          # Применить миграции БД (Liquibase)
+
 make test             # Запустить тесты (PHPUnit)
+make test-unit        # Только юнит-тесты
 make analyze-code     # Статический анализ (PHPStan, уровень 8)
 make check-style      # Проверить стиль кода (PHP-CS-Fixer, dry-run)
 make fix-style        # Исправить стиль кода
@@ -89,19 +97,18 @@ make composer-update  # composer update
 | PHP-CS-Fixer  | ^3.70  | Форматирование кода (PSR-12)  |
 | PHPUnit       | ^12.1  | Тестирование                  |
 
-## Модель трассируемости
+## Модель данных
 
 ```
-Требование
- └── Задача (реализация)
-      └── Тест
-           └── Результат
+Epic
+ └── Story
+      └── Task  (status, readiness %)
 ```
 
-Каждое требование проходит полный жизненный цикл: регистрация → анализ → реализация → верификация → закрытие.
-Отклонения и незакрытые требования фиксируются отдельно для последующего аудита.
+Иерархия трёх уровней: эпик → стори → задача. Статусы задач хранятся в справочнике `core.statuses`. Состояние готовности эпика и стори агрегируется приложением из дочерних записей.
 
 ## Документация
 
 - [Схема данных](docs/database/schema.sql)
 - [Компактное описание схемы](docs/schema.toon)
+- [Диаграмма модели](docs/REQ%20Control%20system.jpg)

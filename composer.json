@@ -25,8 +25,7 @@
         "lint:fix": "php-cs-fixer fix",
         "analyse": "phpstan analyse",
         "test": "phpunit",
-        "test:unit": "phpunit --testsuite Unit",
-        "test:integration": "phpunit --testsuite Integration"
+        "test:unit": "phpunit --testsuite Unit"
     },
     "config": {
         "sort-packages": true,

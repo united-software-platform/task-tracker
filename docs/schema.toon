@@ -1,49 +1,64 @@
 ; req-control database schema contract
-; db: postgresql  schema: core  version: 20260408
+; db: postgresql  schema: core  version: 20260415
 ;
 ; LEGEND
 ;   TABLE name : description
-;     col  TYPE  [NN] [PK] [FK:table.col] [DEFAULT:val] [SELF] -- comment
-;   INDEX name (cols)  [UNIQUE]
+;     col  TYPE  [NN] [PK] [FK:table.col] [DEFAULT:val] -- comment
+;   INDEX name (cols)
 ;   SEED col1 | col2 ...
 ;     val1 | val2 ...
 ;   REL table1 -> table2 via col  (1:N)
 ;
-;   NN = NOT NULL   PK = PRIMARY KEY   FK = FOREIGN KEY   SELF = self-reference
+;   NN = NOT NULL   PK = PRIMARY KEY   FK = FOREIGN KEY
 
-TABLE types : справочник типов сущностей
-  id          BIGSERIAL    NN PK
-  name        TEXT         NN
-  created_at  TIMESTAMPTZ  NN DEFAULT:NOW()
-  updated_at  TIMESTAMPTZ  NN DEFAULT:NOW()
-SEED id | nameС
-  1 | Задача
-  2 | Стори
-  3 | Эпик
+TABLE statuses : справочник статусов задач
+  id         SMALLINT     NN PK
+  name       VARCHAR(100) NN
+  created_at TIMESTAMPTZ  NN DEFAULT:NOW()
+  updated_at TIMESTAMPTZ  NN DEFAULT:NOW()
+SEED id | name
+  1 | Новая
+  2 | В работе
+  3 | Тестирование
+  4 | На уточнении
+  5 | Готово
 
-TABLE tasks : рабочие элементы, иерархия через Nested Sets
+TABLE epics : верхний уровень иерархии
   id          BIGSERIAL    NN PK
   title       VARCHAR(200) NN
-  status      SMALLINT     NN                           -- числовой код, интерпретируется приложением
-  type        SMALLINT     NN FK:types.id               -- ссылка на core.types
-  parent_id   SMALLINT        FK:tasks.id SELF          -- NULL = корневой узел
-  lft         INTEGER      NN DEFAULT:0                 -- левая граница поддерева
-  rgt         INTEGER      NN DEFAULT:0                 -- правая граница поддерева
-  depth       INTEGER      NN DEFAULT:0                 -- 0 = root
+  description TEXT
   created_at  TIMESTAMPTZ  NN DEFAULT:NOW()
   updated_at  TIMESTAMPTZ  NN DEFAULT:NOW()
-INDEX idx_core_tasks_parent_id (parent_id)
-INDEX idx_core_tasks_lft_rgt   (lft, rgt)
+
+TABLE stories : средний уровень иерархии
+  id          BIGSERIAL    NN PK
+  epic_id     BIGINT       NN FK:epics.id
+  title       VARCHAR(200) NN
+  description TEXT
+  created_at  TIMESTAMPTZ  NN DEFAULT:NOW()
+  updated_at  TIMESTAMPTZ  NN DEFAULT:NOW()
+INDEX idx_core_stories_epic_id (epic_id)
+
+TABLE tasks : нижний уровень иерархии
+  id          BIGSERIAL    NN PK
+  story_id    BIGINT       NN FK:stories.id
+  title       VARCHAR(200) NN
+  description TEXT
+  status      SMALLINT     NN FK:statuses.id     -- числовой код статуса
+  readiness   SMALLINT     NN DEFAULT:0          -- готовность 0-100%
+  created_at  TIMESTAMPTZ  NN DEFAULT:NOW()
+  updated_at  TIMESTAMPTZ  NN DEFAULT:NOW()
+INDEX idx_core_tasks_story_id (story_id)
+INDEX idx_core_tasks_status   (status)
 
 ; RELATIONSHIPS
-REL types -> tasks via tasks.type  (1:N)
-REL tasks -> tasks via tasks.parent_id  (1:N) SELF
-
-; NESTED SETS QUERIES
-; subtree:   WHERE lft BETWEEN node.lft AND node.rgt
-; ancestors: WHERE lft < node.lft AND rgt > node.rgt
-; children:  WHERE parent_id = node.id   -- uses idx_core_tasks_parent_id
-; is_leaf:   rgt - lft = 1
+REL epics    -> stories via stories.epic_id   (1:N)
+REL stories  -> tasks   via tasks.story_id    (1:N)
+REL statuses -> tasks   via tasks.status      (1:N)
 
 ; HIERARCHY
-; Эпик (depth=0) -> Стори (depth=1) -> Задача (depth=2)
+; Epic → Story → Task
+
+; AGGREGATION (computed by application, not stored)
+; story.readiness = AVG(tasks.readiness)   WHERE story_id = story.id
+; epic.readiness  = AVG(stories.readiness) WHERE epic_id  = epic.id

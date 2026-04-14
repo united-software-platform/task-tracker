@@ -1,12 +1,13 @@
-какdh-- =============================================================================
+-- =============================================================================
 -- req-control · Database Schema
 -- Engine: PostgreSQL 16   Schema: core
 -- =============================================================================
 --
--- Модель данных состоит из двух таблиц: справочник типов рабочих элементов
--- (types) и сами элементы (tasks). Иерархия задач реализована через паттерн
--- Nested Sets, что позволяет эффективно получать поддеревья и предков
--- одним запросом без рекурсии.
+-- Модель данных: три сущности рабочего трекера — Epic, Story, Task.
+-- Иерархия: Epic → Story → Task (три отдельных таблицы, связи через FK).
+-- Состояние готовности Epic и Story агрегируется приложением из дочерних
+-- записей и не хранится в БД.
+-- Статусы задач вынесены в справочник core.statuses.
 -- =============================================================================
 
 
@@ -18,88 +19,121 @@ CREATE SCHEMA IF NOT EXISTS core;
 
 
 -- -----------------------------------------------------------------------------
--- TABLE core.types
--- Справочник типов рабочих элементов (Задача / Стори / Эпик).
+-- TABLE core.statuses
+-- Справочник статусов задач.
 -- -----------------------------------------------------------------------------
 
-CREATE TABLE core.types (
+CREATE TABLE core.statuses (
+    id         SMALLINT        PRIMARY KEY,
+    name       VARCHAR(100)    NOT NULL,
+    created_at TIMESTAMPTZ     NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ     NOT NULL DEFAULT NOW()
+);
+
+
+-- -----------------------------------------------------------------------------
+-- TABLE core.epics
+-- Верхний уровень иерархии. Состояние готовности — агрегат из сторей.
+-- -----------------------------------------------------------------------------
+
+CREATE TABLE core.epics (
     id          BIGSERIAL       PRIMARY KEY,
-    name        TEXT            NOT NULL,                    -- человекочитаемое название типа
+    title       VARCHAR(200)    NOT NULL,
+    description TEXT,
     created_at  TIMESTAMPTZ     NOT NULL DEFAULT NOW(),
     updated_at  TIMESTAMPTZ     NOT NULL DEFAULT NOW()
 );
 
 
 -- -----------------------------------------------------------------------------
--- TABLE core.tasks
--- Рабочие элементы. Иерархия хранится через Nested Sets (lft / rgt / depth).
--- Одновременно поддерживается parent_id для быстрого обхода прямых потомков.
+-- TABLE core.stories
+-- Средний уровень иерархии. Состояние готовности — агрегат из задач.
 -- -----------------------------------------------------------------------------
 
-CREATE TABLE core.tasks (
+CREATE TABLE core.stories (
     id          BIGSERIAL       PRIMARY KEY,
+    epic_id     BIGINT          NOT NULL,
     title       VARCHAR(200)    NOT NULL,
-    status      SMALLINT        NOT NULL,                    -- числовой код статуса; интерпретируется на уровне приложения
-    type        SMALLINT        NOT NULL,                    -- ссылка на core.types.id
-    parent_id   BIGINT,                                      -- NULL = корневой узел (Эпик)
-    lft         INTEGER         NOT NULL DEFAULT 0,          -- левая граница поддерева (Nested Sets)
-    rgt         INTEGER         NOT NULL DEFAULT 0,          -- правая граница поддерева (Nested Sets)
-    depth       INTEGER         NOT NULL DEFAULT 0           -- глубина: 0 = root, 1 = Стори, 2 = Задача
-                                         CHECK (depth >= 0),
+    description TEXT,
     created_at  TIMESTAMPTZ     NOT NULL DEFAULT NOW(),
     updated_at  TIMESTAMPTZ     NOT NULL DEFAULT NOW(),
 
-    CONSTRAINT fk_tasks_type
-        FOREIGN KEY (type)
-            REFERENCES core.types(id)
-            ON DELETE RESTRICT
-            ON UPDATE CASCADE,
-
-    CONSTRAINT fk_tasks_parent_id
-        FOREIGN KEY (parent_id)
-            REFERENCES core.tasks(id)
+    CONSTRAINT fk_stories_epic_id
+        FOREIGN KEY (epic_id)
+            REFERENCES core.epics(id)
             ON DELETE RESTRICT
             ON UPDATE CASCADE
 );
 
-CREATE INDEX idx_core_tasks_parent_id ON core.tasks (parent_id);
-CREATE INDEX idx_core_tasks_lft_rgt   ON core.tasks (lft, rgt);
+CREATE INDEX idx_core_stories_epic_id ON core.stories (epic_id);
 
 
 -- -----------------------------------------------------------------------------
--- SEED core.types
+-- TABLE core.tasks
+-- Нижний уровень иерархии. Имеет явный статус и процент готовности.
 -- -----------------------------------------------------------------------------
 
-INSERT INTO core.types (id, name) VALUES
-    (1, 'Задача'),
-    (2, 'Стори'),
-    (3, 'Эпик');
+CREATE TABLE core.tasks (
+    id          BIGSERIAL       PRIMARY KEY,
+    story_id    BIGINT          NOT NULL,
+    title       VARCHAR(200)    NOT NULL,
+    description TEXT,
+    status      SMALLINT        NOT NULL,                         -- FK на core.statuses.id
+    readiness   SMALLINT        NOT NULL DEFAULT 0
+                                CHECK (readiness >= 0 AND readiness <= 100),  -- готовность, %
+    created_at  TIMESTAMPTZ     NOT NULL DEFAULT NOW(),
+    updated_at  TIMESTAMPTZ     NOT NULL DEFAULT NOW(),
 
-SELECT setval(pg_get_serial_sequence('core.types', 'id'), 3);
+    CONSTRAINT fk_tasks_story_id
+        FOREIGN KEY (story_id)
+            REFERENCES core.stories(id)
+            ON DELETE RESTRICT
+            ON UPDATE CASCADE,
+
+    CONSTRAINT fk_tasks_status
+        FOREIGN KEY (status)
+            REFERENCES core.statuses(id)
+            ON DELETE RESTRICT
+            ON UPDATE CASCADE
+);
+
+CREATE INDEX idx_core_tasks_story_id ON core.tasks (story_id);
+CREATE INDEX idx_core_tasks_status   ON core.tasks (status);
+
+
+-- -----------------------------------------------------------------------------
+-- SEED core.statuses
+-- -----------------------------------------------------------------------------
+
+INSERT INTO core.statuses (id, name) VALUES
+    (1, 'Новая'),
+    (2, 'В работе'),
+    (3, 'Тестирование'),
+    (4, 'На уточнении'),
+    (5, 'Готово');
 
 
 -- =============================================================================
 -- ## Relationships
 --
--- core.types.id  ←  core.tasks.type        (one-to-many)
---   Один тип может быть присвоен множеству задач.
---   ON DELETE RESTRICT — нельзя удалить тип, пока есть ссылающиеся задачи.
---   ON UPDATE CASCADE  — при смене id типа ссылки обновляются автоматически.
+-- core.epics.id   ←  core.stories.epic_id     (1:N)
+--   Один эпик содержит множество сторей.
+--   ON DELETE RESTRICT — нельзя удалить эпик, пока есть сторей.
 --
--- core.tasks.id  ←  core.tasks.parent_id   (one-to-many, self-reference)
---   Задача может иметь одного родителя и множество потомков.
---   NULL в parent_id обозначает корневой узел (Эпик).
---   ON DELETE RESTRICT — нельзя удалить узел, у которого есть дочерние узлы.
---   ON UPDATE CASCADE  — при смене id родителя ссылки обновляются автоматически.
+-- core.stories.id ←  core.tasks.story_id      (1:N)
+--   Одна стори содержит множество задач.
+--   ON DELETE RESTRICT — нельзя удалить стори, пока есть задачи.
 --
--- Ожидаемая иерархия глубины:
---   Эпик   (depth=0, type=3, parent_id IS NULL)
---    └── Стори  (depth=1, type=2, parent_id = эпик.id)
---         └── Задача (depth=2, type=1, parent_id = стори.id)
+-- core.statuses.id ← core.tasks.status        (1:N)
+--   Один статус может быть у множества задач.
+--   ON DELETE RESTRICT — нельзя удалить статус, пока есть задачи.
 --
--- Nested Sets — типовые запросы:
---   Всё поддерево  : WHERE lft BETWEEN :lft AND :rgt
---   Все предки     : WHERE lft < :lft AND rgt > :rgt
---   Прямые дети    : WHERE parent_id = :id          -- idx_core_tasks_parent_id
---   Узел — лист    : rgt - lft = 1
+-- Иерархия:
+--   Epic
+--    └── Story
+--         └── Task  (status, readiness)
+--
+-- Агрегация готовности:
+--   Story.readiness  = AVG(tasks.readiness)   WHERE story_id = story.id
+--   Epic.readiness   = AVG(stories.readiness) WHERE epic_id  = epic.id
 -- =============================================================================
