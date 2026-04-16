@@ -20,3 +20,4 @@ data/rabbitmq/
 .phpunit.cache/
 var/
 .phpunit.result.cache
+.deptrac.cache
