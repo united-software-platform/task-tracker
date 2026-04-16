@@ -1,6 +1,7 @@
 -- =============================================================================
 -- req-control · Database Schema
 -- Engine: PostgreSQL 16   Schema: core
+-- Version: 1.0.0  (2026-04-16)
 -- =============================================================================
 --
 -- Модель данных: три сущности рабочего трекера — Epic, Story, Task.
@@ -244,3 +245,10 @@ INSERT INTO core.statuses (id, name) VALUES
 --   Story.readiness  = AVG(tasks.readiness)   WHERE story_id = story.id
 --   Epic.readiness   = AVG(stories.readiness) WHERE epic_id  = epic.id
 -- =============================================================================
+
+
+-- =============================================================================
+-- ## Changelog
+-- =============================================================================
+
+-- 2026-04-16 | Claude | initial schema version 1.0.0: core.statuses, core.epics, core.stories, core.tasks, core.functional_requirements, core.business_requirements, core.projects, core.entity_types, core.project_entities
