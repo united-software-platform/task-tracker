@@ -50,6 +50,7 @@ migrate:
 code-setup:
 	make analyze-code
 	make fix-style
+	make check-arch
 
 restart:
 	make down
