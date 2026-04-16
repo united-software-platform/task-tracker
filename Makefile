@@ -60,3 +60,9 @@ composer-install:
 
 composer-update:
 	@$(COMPOSER) update --optimize-autoloader
+
+cache-clear:
+	@$(PHP_EXEC) bin/console cache:clear
+
+routes:
+	@$(PHP_EXEC) bin/console debug:router
