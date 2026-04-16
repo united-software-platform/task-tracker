@@ -3,7 +3,11 @@
     "description": "Requirements Control Platform",
     "type": "project",
     "require": {
-        "php": "^8.3"
+        "php": "^8.4",
+        "symfony/console": "^7.0",
+        "symfony/dotenv": "^7.0",
+        "symfony/framework-bundle": "^7.0",
+        "symfony/yaml": "^7.0"
     },
     "require-dev": {
         "phpstan/phpstan": "^2.1",

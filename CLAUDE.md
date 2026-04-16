@@ -1,6 +1,8 @@
 # Правила проекта
 
 @.claude/rules/php-style.md
+@.claude/rules/symfony.md
+@.claude/rules/clean-architecture.md
 
 ## Git коммиты
 

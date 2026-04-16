@@ -6,10 +6,9 @@ use PhpCsFixer\Config;
 use PhpCsFixer\Finder;
 use PhpCsFixer\Runner\Parallel\ParallelConfig;
 
-$finder = new Finder()
+$finder = (new Finder())
     ->in(__DIR__ . '/src')
-    ->in(__DIR__ . '/tests')
-    ->exclude(__DIR__ . '/vendor')
+    ->notPath('Kernel.php')
 ;
 
 $rules = [
@@ -25,7 +24,7 @@ $rules = [
     'phpdoc_order' => ['order' => ['param', 'throws', 'return']],
 ];
 
-return new Config()
+return (new Config())
     ->setCacheFile(__DIR__ . '/.php-cs-fixer.cache')
     ->setFinder($finder)
     ->setRules($rules)

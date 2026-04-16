@@ -1,5 +1,8 @@
 # REQ-CONTROL СТР — Централизованная система управления требованиями
 
+[![PHPStan](https://github.com/united-software-platform/req-control/actions/workflows/phpstan.yml/badge.svg)](https://github.com/united-software-platform/req-control/actions/workflows/phpstan.yml)
+[![PHP CS Fixer](https://github.com/united-software-platform/req-control/actions/workflows/php-cs-fixer.yml/badge.svg)](https://github.com/united-software-platform/req-control/actions/workflows/php-cs-fixer.yml)
+
 ## Назначение
 
 REQ-CONTROL СТР — централизованная система, обеспечивающая:
@@ -14,7 +17,7 @@ REQ-CONTROL СТР — централизованная система, обес
 
 | Компонент       | Технология              | Назначение                                  |
 |-----------------|-------------------------|---------------------------------------------|
-| Backend         | PHP 8.3                 | Бизнес-логика приложения                    |
+| Backend         | PHP 8.4                 | Бизнес-логика приложения                    |
 | База данных     | PostgreSQL 16           | Хранилище требований и связанных сущностей  |
 | Миграции        | Liquibase 4.27          | Версионирование схемы БД                    |
 | Брокер          | RabbitMQ 3.13           | Обмен событиями между сервисами             |
