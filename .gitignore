@@ -19,3 +19,4 @@ data/rabbitmq/
 .php-cs-fixer.cache
 .phpunit.cache/
 var/
+.phpunit.result.cache
