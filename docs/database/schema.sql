@@ -81,6 +81,8 @@ CREATE TABLE core.tasks (
     status      SMALLINT        NOT NULL,                         -- FK на core.statuses.id
     readiness   SMALLINT        NOT NULL DEFAULT 0
                                 CHECK (readiness >= 0 AND readiness <= 100),  -- готовность, %
+    blocked_by  BIGINT          NULL,                             -- задача-блокировщик; NULL = не заблокирована
+    assignee    VARCHAR(200)    NULL,                             -- имя/логин исполнителя; NULL = нет исполнителя
     created_at  TIMESTAMPTZ     NOT NULL DEFAULT NOW(),
     updated_at  TIMESTAMPTZ     NOT NULL DEFAULT NOW(),
 
@@ -94,11 +96,17 @@ CREATE TABLE core.tasks (
         FOREIGN KEY (status)
             REFERENCES core.statuses(id)
             ON DELETE RESTRICT
-            ON UPDATE CASCADE
+            ON UPDATE CASCADE,
+
+    CONSTRAINT fk_tasks_blocked_by
+        FOREIGN KEY (blocked_by)
+            REFERENCES core.tasks(id)
+            ON DELETE SET NULL
 );
 
-CREATE INDEX idx_core_tasks_story_id ON core.tasks (story_id);
-CREATE INDEX idx_core_tasks_status   ON core.tasks (status);
+CREATE INDEX idx_core_tasks_story_id  ON core.tasks (story_id);
+CREATE INDEX idx_core_tasks_status    ON core.tasks (status);
+CREATE INDEX idx_core_tasks_blocked_by ON core.tasks (blocked_by);
 
 
 -- -----------------------------------------------------------------------------
@@ -222,6 +230,10 @@ INSERT INTO core.statuses (id, name) VALUES
 -- core.statuses.id ← core.tasks.status        (1:N)
 --   Один статус может быть у множества задач.
 --   ON DELETE RESTRICT — нельзя удалить статус, пока есть задачи.
+--
+-- core.tasks.id   ←  core.tasks.blocked_by    (0:1 self-ref)
+--   Задача может быть заблокирована другой задачей (необязательно).
+--   ON DELETE SET NULL — при удалении задачи-блокировщика поле обнуляется.
 --
 -- Иерархия:
 --   Epic
