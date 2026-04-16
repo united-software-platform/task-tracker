@@ -2,16 +2,13 @@
 
 declare(strict_types=1);
 
-namespace App\Infrastructure\Mcp\Tool;
+namespace App\Task\Infrastructure\Mcp\Tool;
 
 use Mcp\Capability\Attribute\McpTool;
 use Mcp\Schema\Content\TextContent;
 use Mcp\Schema\Result\CallToolResult;
 use PDO;
 
-/**
- * MCP Tool: возвращает все записи core.statuses (id, name).
- */
 final class GetTaskStatusesTool
 {
     public function __construct(
