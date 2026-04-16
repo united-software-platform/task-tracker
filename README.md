@@ -1,7 +1,7 @@
 # REQ-CONTROL СТР — Централизованная система управления требованиями
 
-[![PHPStan](https://github.com/united-software-platform/req-control/actions/workflows/phpstan.yml/badge.svg)](https://github.com/united-software-platform/req-control/actions/workflows/phpstan.yml)
-[![PHP CS Fixer](https://github.com/united-software-platform/req-control/actions/workflows/php-cs-fixer.yml/badge.svg)](https://github.com/united-software-platform/req-control/actions/workflows/php-cs-fixer.yml)
+[![PHPStan](https://github.com/united-software-platform/req-control/actions/workflows/phpstan.yml/badge.svg?branch=main)](https://github.com/united-software-platform/req-control/actions/workflows/phpstan.yml)
+[![PHP CS Fixer](https://github.com/united-software-platform/req-control/actions/workflows/php-cs-fixer.yml/badge.svg?branch=main)](https://github.com/united-software-platform/req-control/actions/workflows/php-cs-fixer.yml)
 
 ## Назначение
 
