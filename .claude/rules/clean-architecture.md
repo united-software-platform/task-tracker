@@ -87,21 +87,24 @@
 
 ### Структура каталогов
 
+Код организован по **доменным модулям**. Каждый модуль — самостоятельный bounded context со своими слоями.
+
 ```
 src/
-├── Domain/
-│   ├── Model/          # Entities, Value Objects
-│   ├── Event/          # Domain Events
-│   ├── Repository/     # Interfaces
-│   └── Service/        # Domain Services
-├── Application/
-│   └── UseCase/
-│       ├── ApproveRequirement/   # Input, Output, Interface, UseCase
-│       └── GetRequirement/       # Input, Output, Interface, UseCase
-└── Infrastructure/
-    ├── Persistence/    # Doctrine Repositories, Migrations
-    ├── Http/           # Controllers
-    └── External/       # HTTP-клиенты, очереди
+└── {DomainModule}/               # например: Requirement, User, Project
+    ├── Domain/
+    │   ├── Model/          # Entities, Value Objects
+    │   ├── Event/          # Domain Events
+    │   ├── Repository/     # Interfaces
+    │   └── Service/        # Domain Services
+    ├── Application/
+    │   └── UseCase/
+    │       ├── ApproveRequirement/   # Input, Output, Interface, UseCase
+    │       └── GetRequirement/       # Input, Output, Interface, UseCase
+    └── Infrastructure/
+        ├── Persistence/    # Doctrine Repositories, Migrations
+        ├── Http/           # Controllers
+        └── External/       # HTTP-клиенты, очереди
 ```
 
 ---
@@ -110,7 +113,7 @@ src/
 
 ```php
 // Domain — интерфейс репозитория
-namespace App\Domain\Repository;
+namespace App\Requirement\Domain\Repository;
 
 interface RequirementRepositoryInterface
 {
@@ -119,7 +122,7 @@ interface RequirementRepositoryInterface
 }
 
 // Application — UseCase
-namespace App\Application\UseCase\ApproveRequirement;
+namespace App\Requirement\Application\UseCase\ApproveRequirement;
 
 final class ApproveRequirementInput
 {
@@ -151,7 +154,7 @@ final class ApproveRequirementUseCase implements ApproveRequirementUseCaseInterf
 }
 
 // Infrastructure — реализация репозитория
-namespace App\Infrastructure\Persistence;
+namespace App\Requirement\Infrastructure\Persistence;
 
 final class DoctrineRequirementRepository implements RequirementRepositoryInterface
 {
