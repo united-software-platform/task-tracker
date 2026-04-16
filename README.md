@@ -29,13 +29,24 @@ REQ-CONTROL СТР — централизованная система, обес
 
 ```
 req-control/
+├── .github/workflows/           # CI: PHPStan, PHP-CS-Fixer, Deptrac
+├── .claude/rules/               # Правила архитектуры для Claude Code
+├── bin/
+│   ├── console                  # Symfony Console
+│   └── mcp-server.php           # MCP-сервер (stdio transport)
 ├── docker/
 │   └── php/
 │       └── Dockerfile           # PHP 8.3-cli-alpine + Composer
 ├── migrations/
 │   ├── db.changelog-master.xml
 │   └── sql/                     # Liquibase SQL-миграции
-├── src/                         # Исходный код приложения (PSR-4: App\)
+├── src/                         # Исходный код (PSR-4: App\)
+│   ├── {Module}/                # Доменный модуль (Module-first)
+│   │   ├── Domain/              # Entities, Value Objects, Repository interfaces
+│   │   ├── Application/         # Use Cases, Input/Output DTO
+│   │   └── Infrastructure/      # Doctrine, HTTP, MCP-инструменты
+│   ├── Controller/              # Symfony HTTP-контроллеры
+│   └── Kernel.php
 ├── tests/
 │   └── Unit/                    # Юнит-тесты
 ├── docs/
@@ -43,9 +54,10 @@ req-control/
 │   │   └── schema.sql           # Эталонная схема БД
 │   ├── tasks/                   # Постановки задач
 │   ├── schema.toon              # Компактное описание схемы
-│   └── REQ Control system.jpg  # Диаграмма модели данных
+│   └── REQ Control system.jpg   # Диаграмма модели данных
 ├── data/                        # Тома БД и брокера (не в git)
 ├── docker-compose.yml
+├── deptrac.php                  # Конфиг контроля архитектурных зависимостей
 ├── .env.example
 ├── Makefile
 ├── composer.json
@@ -87,7 +99,8 @@ make test-unit        # Только юнит-тесты
 make analyze-code     # Статический анализ (PHPStan, уровень 8)
 make check-style      # Проверить стиль кода (PHP-CS-Fixer, dry-run)
 make fix-style        # Исправить стиль кода
-make code-setup       # Анализ + исправление стиля
+make check-arch       # Контроль архитектурных зависимостей (Deptrac)
+make code-setup       # Анализ + исправление стиля + проверка архитектуры
 
 make composer-install # composer install
 make composer-update  # composer update
@@ -95,21 +108,36 @@ make composer-update  # composer update
 
 ## Инструменты качества кода
 
-| Инструмент    | Версия | Назначение                    |
-|---------------|--------|-------------------------------|
-| PHPStan       | ^2.1   | Статический анализ (level 8)  |
-| PHP-CS-Fixer  | ^3.70  | Форматирование кода (PSR-12)  |
-| PHPUnit       | ^12.1  | Тестирование                  |
+| Инструмент    | Версия | Назначение                                      |
+|---------------|--------|-------------------------------------------------|
+| PHPStan       | ^2.1   | Статический анализ (level 6)                    |
+| PHP-CS-Fixer  | ^3.70  | Форматирование кода (PSR-12)                    |
+| PHPUnit       | ^12.1  | Тестирование                                    |
+| Deptrac       | ^2.0   | Контроль архитектурных зависимостей (Module-first) |
 
 ## Модель данных
 
 ```
 Epic
  └── Story
-      └── Task  (status, readiness %)
+      └── Task  (status → core.statuses, readiness %)
 ```
 
 Иерархия трёх уровней: эпик → стори → задача. Статусы задач хранятся в справочнике `core.statuses`. Состояние готовности эпика и стори агрегируется приложением из дочерних записей.
+
+## MCP-сервер
+
+Приложение предоставляет [MCP](https://modelcontextprotocol.io)-сервер для интеграции с AI-инструментами (Claude Code и другими):
+
+```bash
+php bin/mcp-server.php
+```
+
+| Инструмент          | Описание                                              |
+|---------------------|-------------------------------------------------------|
+| `get_task_statuses` | Возвращает все статусы задач из `core.statuses`       |
+
+Сервер использует stdio transport и читает параметры подключения к БД из переменных окружения (`POSTGRES_HOST`, `POSTGRES_PORT`, `POSTGRES_DB`, `POSTGRES_USER`, `POSTGRES_PASSWORD`).
 
 ## Claude Code Skills
 
