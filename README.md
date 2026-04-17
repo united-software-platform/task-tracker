@@ -128,16 +128,17 @@ Epic
 
 Приложение предоставляет [MCP](https://modelcontextprotocol.io)-сервер для интеграции с AI-инструментами (Claude Code и другими).
 
-| Инструмент          | Описание                                                        |
-|---------------------|-----------------------------------------------------------------|
-| `get_task_statuses` | Возвращает все статусы задач из `core.statuses`                 |
-| `get_epics`         | Возвращает список всех эпиков: id, title, количество сторей     |
-| `get_epic_stories`  | Возвращает список сторей эпика: id, title, средний % готовности |
-| `get_story_tasks`   | Возвращает список задач стори: id, title, статус, readiness %   |
+| Инструмент          | Описание                                                                                      |
+|---------------------|-----------------------------------------------------------------------------------------------|
+| `get_task_statuses` | Возвращает все статусы задач из `core.statuses`                                               |
+| `get_epics`         | Возвращает список всех эпиков: id, title, количество сторей                                   |
+| `get_epic_stories`  | Возвращает список сторей эпика: id, title, средний % готовности                               |
+| `get_story_tasks`   | Возвращает список задач стори: id, title, статус, readiness %                                 |
 | `get_task`          | Возвращает детали задачи: id, title, description, статус, readiness %, created_at, updated_at |
-| `create_epic`       | Создаёт новый эпик; возвращает id и title                       |
-| `create_story`      | Создаёт новую стори внутри эпика; возвращает id и title         |
-| `create_task`       | Создаёт новую задачу внутри стори со статусом «Новая» (1)       |
+| `create_epic`       | Создаёт новый эпик; возвращает id и title                                                     |
+| `create_story`      | Создаёт новую стори внутри эпика; возвращает id и title                                       |
+| `create_task`       | Создаёт новую задачу внутри стори со статусом «Новая» (1)                                     |
+| `update_task`       | Обновляет поля задачи: title, description, readiness (0–100), status; передавай только изменяемые поля |
 
 Сервер использует stdio transport и читает параметры подключения к БД из переменных окружения (`POSTGRES_HOST`, `POSTGRES_PORT`, `POSTGRES_DB`, `POSTGRES_USER`, `POSTGRES_PASSWORD`).
 
@@ -161,6 +162,17 @@ MCP-сервер запускается автоматически при ста
     "req-control": {
       "command": "docker",
       "args": ["exec", "-i", "reqcontrol_php", "php", "/app/bin/mcp-server.php"]
+    },
+    "tldr": {
+      "command": "tldr-mcp",
+      "args": ["--project", "."]
+    },
+    "excel": {
+      "command": "excel-mcp-server",
+      "args": ["stdio"],
+      "env": {
+        "EXCEL_FILES_PATH": "docs"
+      }
     }
   }
 }
@@ -171,6 +183,32 @@ MCP-сервер запускается автоматически при ста
 ```bash
 echo '{"jsonrpc":"2.0","id":1,"method":"tools/list","params":{}}' \
   | docker exec -i reqcontrol_php php /app/bin/mcp-server.php
+```
+
+## Версионирование
+
+Версия приложения хранится в `composer.json` (поле `version`) и автоматически подставляется в MCP-сервер при запуске.
+
+Git-хуки в `.githooks/` управляют версией автоматически:
+
+| Хук            | Действие                                                              |
+|----------------|-----------------------------------------------------------------------|
+| `pre-commit`   | Инкрементирует PATCH-версию в `composer.json` и добавляет файл в коммит |
+| `post-commit`  | Создаёт git-тег `vX.Y.Z` с новой версией                             |
+
+### Установка хуков
+
+После клонирования репозитория выполните:
+
+```bash
+composer hooks:install
+```
+
+Или вручную:
+
+```bash
+git config core.hooksPath .githooks
+chmod +x .githooks/pre-commit .githooks/post-commit
 ```
 
 ## Claude Code Skills
