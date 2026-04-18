@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace App\Task\Application\UseCase\UpdateTask;
 
-final class UpdateTaskInput
+final readonly class UpdateTaskInput
 {
     public function __construct(
-        public readonly int $taskId,
-        public readonly ?string $title = null,
-        public readonly ?string $description = null,
-        public readonly ?int $readiness = null,
-        public readonly ?int $status = null,
+        public int $taskId,
+        public ?string $title = null,
+        public ?string $description = null,
+        public ?int $readiness = null,
+        public ?int $status = null,
     ) {}
 }

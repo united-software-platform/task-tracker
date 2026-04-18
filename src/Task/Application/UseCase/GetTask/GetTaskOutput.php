@@ -6,9 +6,9 @@ namespace App\Task\Application\UseCase\GetTask;
 
 use App\Task\Domain\Model\TaskDetail;
 
-final class GetTaskOutput
+final readonly class GetTaskOutput
 {
     public function __construct(
-        public readonly TaskDetail $task,
+        public TaskDetail $task,
     ) {}
 }

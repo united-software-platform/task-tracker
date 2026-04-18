@@ -9,10 +9,10 @@ use App\Task\Domain\Model\EpicSummary;
 use App\Task\Domain\Repository\EpicRepositoryInterface;
 use PDO;
 
-final class PdoEpicRepository implements EpicRepositoryInterface
+final readonly class PdoEpicRepository implements EpicRepositoryInterface
 {
     public function __construct(
-        private readonly PDO $pdo,
+        private PDO $pdo,
     ) {}
 
     public function create(string $title, ?string $description): Epic

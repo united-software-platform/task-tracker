@@ -6,10 +6,10 @@ namespace App\Task\Application\UseCase\GetEpics;
 
 use App\Task\Domain\Model\EpicSummary;
 
-final class GetEpicsOutput
+final readonly class GetEpicsOutput
 {
     public function __construct(
         /** @var list<EpicSummary> */
-        public readonly array $epics,
+        public array $epics,
     ) {}
 }

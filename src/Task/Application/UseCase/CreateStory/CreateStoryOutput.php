@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Task\Application\UseCase\CreateStory;
 
-final class CreateStoryOutput
+final readonly class CreateStoryOutput
 {
     public function __construct(
-        public readonly int $id,
-        public readonly string $title,
+        public int $id,
+        public string $title,
     ) {}
 }

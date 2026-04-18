@@ -9,10 +9,10 @@ use Mcp\Schema\Content\TextContent;
 use Mcp\Schema\Result\CallToolResult;
 use PDO;
 
-final class GetTaskStatusesTool
+final readonly class GetTaskStatusesTool
 {
     public function __construct(
-        private readonly PDO $pdo,
+        private PDO $pdo,
     ) {}
 
     #[McpTool(

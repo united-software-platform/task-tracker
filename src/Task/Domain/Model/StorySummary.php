@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Task\Domain\Model;
 
-final class StorySummary
+final readonly class StorySummary
 {
     public function __construct(
-        public readonly int $id,
-        public readonly string $title,
-        public readonly int $avgReadiness,
+        public int $id,
+        public string $title,
+        public int $avgReadiness,
     ) {}
 }

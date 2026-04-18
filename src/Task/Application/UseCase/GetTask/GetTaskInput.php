@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Task\Application\UseCase\GetTask;
 
-final class GetTaskInput
+final readonly class GetTaskInput
 {
     public function __construct(
-        public readonly int $taskId,
+        public int $taskId,
     ) {}
 }

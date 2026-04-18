@@ -9,10 +9,10 @@ use App\Task\Domain\Model\StorySummary;
 use App\Task\Domain\Repository\StoryRepositoryInterface;
 use PDO;
 
-final class PdoStoryRepository implements StoryRepositoryInterface
+final readonly class PdoStoryRepository implements StoryRepositoryInterface
 {
     public function __construct(
-        private readonly PDO $pdo,
+        private PDO $pdo,
     ) {}
 
     public function create(int $epicId, string $title, ?string $description): Story

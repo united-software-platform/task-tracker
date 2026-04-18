@@ -11,6 +11,8 @@ $finder = (new Finder())
     ->notPath('Kernel.php')
 ;
 
+require_once __DIR__ . '/.php-cs-fixer/ReadonlyClassFixer.php';
+
 $rules = [
     '@PHP8x4Migration' => true,
     '@PhpCsFixer' => true,
@@ -22,9 +24,12 @@ $rules = [
     'php_unit_test_class_requires_covers' => false,
     'types_spaces' => ['space_multiple_catch' => 'single'],
     'phpdoc_order' => ['order' => ['param', 'throws', 'return']],
+    'no_redundant_readonly_property' => true,
+    'Custom/readonly_class' => true,
 ];
 
 return (new Config())
+    ->registerCustomFixers([new ReadonlyClassFixer()])
     ->setCacheFile(__DIR__ . '/.php-cs-fixer.cache')
     ->setFinder($finder)
     ->setRules($rules)

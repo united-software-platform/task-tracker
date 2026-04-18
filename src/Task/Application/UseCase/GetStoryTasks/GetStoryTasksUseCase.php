@@ -6,10 +6,10 @@ namespace App\Task\Application\UseCase\GetStoryTasks;
 
 use App\Task\Domain\Repository\TaskRepositoryInterface;
 
-final class GetStoryTasksUseCase implements GetStoryTasksUseCaseInterface
+final readonly class GetStoryTasksUseCase implements GetStoryTasksUseCaseInterface
 {
     public function __construct(
-        private readonly TaskRepositoryInterface $tasks,
+        private TaskRepositoryInterface $tasks,
     ) {}
 
     public function execute(GetStoryTasksInput $input): GetStoryTasksOutput

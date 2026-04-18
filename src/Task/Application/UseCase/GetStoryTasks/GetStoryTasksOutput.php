@@ -6,10 +6,10 @@ namespace App\Task\Application\UseCase\GetStoryTasks;
 
 use App\Task\Domain\Model\TaskSummary;
 
-final class GetStoryTasksOutput
+final readonly class GetStoryTasksOutput
 {
     public function __construct(
         /** @var list<TaskSummary> */
-        public readonly array $tasks,
+        public array $tasks,
     ) {}
 }

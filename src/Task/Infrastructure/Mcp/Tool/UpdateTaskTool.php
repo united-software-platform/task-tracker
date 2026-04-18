@@ -11,10 +11,10 @@ use Mcp\Capability\Attribute\Schema;
 use Mcp\Schema\Content\TextContent;
 use Mcp\Schema\Result\CallToolResult;
 
-final class UpdateTaskTool
+final readonly class UpdateTaskTool
 {
     public function __construct(
-        private readonly UpdateTaskUseCaseInterface $useCase,
+        private UpdateTaskUseCaseInterface $useCase,
     ) {}
 
     #[McpTool(

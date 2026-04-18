@@ -11,10 +11,10 @@ use Mcp\Capability\Attribute\Schema;
 use Mcp\Schema\Content\TextContent;
 use Mcp\Schema\Result\CallToolResult;
 
-final class CreateStoryTool
+final readonly class CreateStoryTool
 {
     public function __construct(
-        private readonly CreateStoryUseCaseInterface $useCase,
+        private CreateStoryUseCaseInterface $useCase,
     ) {}
 
     #[McpTool(

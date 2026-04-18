@@ -12,10 +12,10 @@ use Mcp\Capability\Attribute\Schema;
 use Mcp\Schema\Content\TextContent;
 use Mcp\Schema\Result\CallToolResult;
 
-final class GetEpicStoriesTool
+final readonly class GetEpicStoriesTool
 {
     public function __construct(
-        private readonly GetEpicStoriesUseCaseInterface $useCase,
+        private GetEpicStoriesUseCaseInterface $useCase,
     ) {}
 
     #[McpTool(

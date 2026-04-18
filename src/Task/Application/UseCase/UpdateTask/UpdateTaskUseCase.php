@@ -6,10 +6,10 @@ namespace App\Task\Application\UseCase\UpdateTask;
 
 use App\Task\Domain\Repository\TaskRepositoryInterface;
 
-final class UpdateTaskUseCase implements UpdateTaskUseCaseInterface
+final readonly class UpdateTaskUseCase implements UpdateTaskUseCaseInterface
 {
     public function __construct(
-        private readonly TaskRepositoryInterface $tasks,
+        private TaskRepositoryInterface $tasks,
     ) {}
 
     public function execute(UpdateTaskInput $input): void

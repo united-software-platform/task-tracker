@@ -6,10 +6,10 @@ namespace App\Task\Application\UseCase\CreateStory;
 
 use App\Task\Domain\Repository\StoryRepositoryInterface;
 
-final class CreateStoryUseCase implements CreateStoryUseCaseInterface
+final readonly class CreateStoryUseCase implements CreateStoryUseCaseInterface
 {
     public function __construct(
-        private readonly StoryRepositoryInterface $stories,
+        private StoryRepositoryInterface $stories,
     ) {}
 
     public function execute(CreateStoryInput $input): CreateStoryOutput

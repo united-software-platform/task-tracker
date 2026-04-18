@@ -11,12 +11,12 @@ use App\Task\Domain\Repository\TaskRepositoryInterface;
 use PDO;
 use RuntimeException;
 
-final class PdoTaskRepository implements TaskRepositoryInterface
+final readonly class PdoTaskRepository implements TaskRepositoryInterface
 {
     private const STATUS_NEW = 1;
 
     public function __construct(
-        private readonly PDO $pdo,
+        private PDO $pdo,
     ) {}
 
     public function create(int $storyId, string $title, ?string $description): Task

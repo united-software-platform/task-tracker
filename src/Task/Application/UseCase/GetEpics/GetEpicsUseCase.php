@@ -6,10 +6,10 @@ namespace App\Task\Application\UseCase\GetEpics;
 
 use App\Task\Domain\Repository\EpicRepositoryInterface;
 
-final class GetEpicsUseCase implements GetEpicsUseCaseInterface
+final readonly class GetEpicsUseCase implements GetEpicsUseCaseInterface
 {
     public function __construct(
-        private readonly EpicRepositoryInterface $epics,
+        private EpicRepositoryInterface $epics,
     ) {}
 
     public function execute(): GetEpicsOutput

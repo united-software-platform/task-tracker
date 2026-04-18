@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Task\Application\UseCase\CreateEpic;
 
-final class CreateEpicInput
+final readonly class CreateEpicInput
 {
     public function __construct(
-        public readonly string $title,
-        public readonly ?string $description,
+        public string $title,
+        public ?string $description,
     ) {}
 }
