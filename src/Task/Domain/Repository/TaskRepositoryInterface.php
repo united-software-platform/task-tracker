@@ -10,7 +10,7 @@ use App\Task\Domain\Model\TaskSummary;
 
 interface TaskRepositoryInterface
 {
-    public function create(int $storyId, string $title, ?string $description): Task;
+    public function create(int $projectId, string $code, int $storyId, string $title, ?string $description): Task;
 
     public function findById(int $id): TaskDetail;
 

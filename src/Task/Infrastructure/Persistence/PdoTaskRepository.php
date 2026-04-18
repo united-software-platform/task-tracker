@@ -19,23 +19,30 @@ final readonly class PdoTaskRepository implements TaskRepositoryInterface
         private PDO $pdo,
     ) {}
 
-    public function create(int $storyId, string $title, ?string $description): Task
+    public function create(int $projectId, string $code, int $storyId, string $title, ?string $description): Task
     {
         $stmt = $this->pdo->prepare(
-            'INSERT INTO core.tasks (story_id, title, description, status, readiness) VALUES (:story_id, :title, :description, :status, 0) RETURNING id, story_id, title, description, status, readiness',
+            'INSERT INTO core.tasks (code, story_id, title, description, status, readiness) VALUES (:code, :story_id, :title, :description, :status, 0) RETURNING id, code, story_id, title, description, status, readiness',
         );
         $stmt->execute([
+            'code' => $code,
             'story_id' => $storyId,
             'title' => $title,
             'description' => $description,
             'status' => self::STATUS_NEW,
         ]);
 
-        /** @var array{id: int, story_id: int, title: string, description: null|string, status: int, readiness: int} $row */
+        /** @var array{id: int, code: string, story_id: int, title: string, description: null|string, status: int, readiness: int} $row */
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        $this->pdo->prepare(
+            'INSERT INTO core.project_entities (project_id, entity_type_id, entity_id)
+             SELECT :project_id, et.id, :entity_id FROM core.entity_types et WHERE et.type = \'task\'',
+        )->execute(['project_id' => $projectId, 'entity_id' => $row['id']]);
 
         return new Task(
             (int) $row['id'],
+            $row['code'],
             (int) $row['story_id'],
             $row['title'],
             $row['description'],
