@@ -4,13 +4,23 @@ set -euo pipefail
 COMPOSER_JSON="$(git rev-parse --show-toplevel)/composer.json"
 
 current=$(perl -ne 'print $1 if /"version"\s*:\s*"([^"]+)"/' "$COMPOSER_JSON")
+
+if [[ -z "${current}" ]]; then
+  echo "Cannot find version in composer.json"
+  exit 1
+fi
+
 major=$(echo "$current" | cut -d. -f1)
 minor=$(echo "$current" | cut -d. -f2)
 patch=$(echo "$current" | cut -d. -f3)
 
 next="${major}.${minor}.$((patch + 1))"
 
-sed -i '' "s/\"version\": \"${current}\"/\"version\": \"${next}\"/" "$COMPOSER_JSON"
+if [[ "$(uname)" == "Darwin" ]]; then
+  sed -i '' "s/\"version\": *\"${current}\"/\"version\": \"${next}\"/" "$COMPOSER_JSON"
+else
+  sed -i "s/\"version\": *\"${current}\"/\"version\": \"${next}\"/" "$COMPOSER_JSON"
+fi
 
 git add "$COMPOSER_JSON"
 
