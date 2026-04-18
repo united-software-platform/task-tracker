@@ -1,15 +1,11 @@
 {
     "name": "req-control/app",
     "description": "Requirements Control Platform",
-    "version": "1.0.5",
+    "version": "1.0.6",
     "type": "project",
     "require": {
         "php": "^8.4",
-        "mcp/sdk": "^0.4.0",
-        "symfony/console": "^7.0",
-        "symfony/dotenv": "^7.0",
-        "symfony/framework-bundle": "^7.0",
-        "symfony/yaml": "^7.0"
+        "mcp/sdk": "^0.4.0"
     },
     "require-dev": {
         "deptrac/deptrac": "^2.0",
