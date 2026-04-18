@@ -41,6 +41,8 @@ CREATE TABLE core.epics (
     id          BIGSERIAL       PRIMARY KEY,
     title       VARCHAR(200)    NOT NULL,
     description TEXT,
+    assignee    VARCHAR(200)    NULL,
+    approver    VARCHAR(200)    NULL,
     created_at  TIMESTAMPTZ     NOT NULL DEFAULT NOW(),
     updated_at  TIMESTAMPTZ     NOT NULL DEFAULT NOW()
 );
@@ -56,6 +58,8 @@ CREATE TABLE core.stories (
     epic_id     BIGINT          NOT NULL,
     title       VARCHAR(200)    NOT NULL,
     description TEXT,
+    assignee    VARCHAR(200)    NULL,
+    approver    VARCHAR(200)    NULL,
     created_at  TIMESTAMPTZ     NOT NULL DEFAULT NOW(),
     updated_at  TIMESTAMPTZ     NOT NULL DEFAULT NOW(),
 
@@ -84,6 +88,9 @@ CREATE TABLE core.tasks (
                                 CHECK (readiness >= 0 AND readiness <= 100),  -- готовность, %
     blocked_by  BIGINT          NULL,                             -- задача-блокировщик; NULL = не заблокирована
     assignee    VARCHAR(200)    NULL,                             -- имя/логин исполнителя; NULL = нет исполнителя
+    approver    VARCHAR(200)    NULL,                             -- имя/логин утверждающего; NULL = нет утверждающего
+    plan        TEXT            NULL,                             -- план выполнения задачи
+    model       TEXT            NULL,                             -- модель/описание решения
     created_at  TIMESTAMPTZ     NOT NULL DEFAULT NOW(),
     updated_at  TIMESTAMPTZ     NOT NULL DEFAULT NOW(),
 
@@ -108,6 +115,70 @@ CREATE TABLE core.tasks (
 CREATE INDEX idx_core_tasks_story_id  ON core.tasks (story_id);
 CREATE INDEX idx_core_tasks_status    ON core.tasks (status);
 CREATE INDEX idx_core_tasks_blocked_by ON core.tasks (blocked_by);
+
+
+-- -----------------------------------------------------------------------------
+-- TABLE core.task_functional_requirements
+-- Связь задач с функциональными требованиями (many-to-many).
+-- -----------------------------------------------------------------------------
+
+CREATE TABLE core.task_functional_requirements (
+    id                          BIGSERIAL       PRIMARY KEY,
+    task_id                     BIGINT          NOT NULL,
+    functional_requirement_id   BIGINT          NOT NULL,
+    created_at                  TIMESTAMPTZ     NOT NULL DEFAULT NOW(),
+    updated_at                  TIMESTAMPTZ     NOT NULL DEFAULT NOW(),
+
+    CONSTRAINT uq_task_functional_requirements
+        UNIQUE (task_id, functional_requirement_id),
+
+    CONSTRAINT fk_task_ft_task_id
+        FOREIGN KEY (task_id)
+            REFERENCES core.tasks(id)
+            ON DELETE CASCADE
+            ON UPDATE CASCADE,
+
+    CONSTRAINT fk_task_ft_requirement_id
+        FOREIGN KEY (functional_requirement_id)
+            REFERENCES core.functional_requirements(id)
+            ON DELETE RESTRICT
+            ON UPDATE CASCADE
+);
+
+CREATE INDEX idx_core_task_ft_task_id ON core.task_functional_requirements (task_id);
+CREATE INDEX idx_core_task_ft_requirement_id ON core.task_functional_requirements (functional_requirement_id);
+
+
+-- -----------------------------------------------------------------------------
+-- TABLE core.task_business_requirements
+-- Связь задач с бизнес-требованиями (many-to-many).
+-- -----------------------------------------------------------------------------
+
+CREATE TABLE core.task_business_requirements (
+    id                        BIGSERIAL       PRIMARY KEY,
+    task_id                   BIGINT          NOT NULL,
+    business_requirement_id   BIGINT          NOT NULL,
+    created_at                TIMESTAMPTZ     NOT NULL DEFAULT NOW(),
+    updated_at                TIMESTAMPTZ     NOT NULL DEFAULT NOW(),
+
+    CONSTRAINT uq_task_business_requirements
+        UNIQUE (task_id, business_requirement_id),
+
+    CONSTRAINT fk_task_bt_task_id
+        FOREIGN KEY (task_id)
+            REFERENCES core.tasks(id)
+            ON DELETE CASCADE
+            ON UPDATE CASCADE,
+
+    CONSTRAINT fk_task_bt_requirement_id
+        FOREIGN KEY (business_requirement_id)
+            REFERENCES core.business_requirements(id)
+            ON DELETE RESTRICT
+            ON UPDATE CASCADE
+);
+
+CREATE INDEX idx_core_task_bt_task_id ON core.task_business_requirements (task_id);
+CREATE INDEX idx_core_task_bt_requirement_id ON core.task_business_requirements (business_requirement_id);
 
 
 -- -----------------------------------------------------------------------------
@@ -236,6 +307,16 @@ INSERT INTO core.statuses (id, name) VALUES
 --   Задача может быть заблокирована другой задачей (необязательно).
 --   ON DELETE SET NULL — при удалении задачи-блокировщика поле обнуляется.
 --
+-- core.tasks.id + core.functional_requirements.id  ←  core.task_functional_requirements  (M:N)
+--   Задача может ссылаться на несколько ФТ; одно ФТ может относиться к нескольким задачам.
+--   ON DELETE CASCADE (task) — при удалении задачи связи удаляются автоматически.
+--   ON DELETE RESTRICT (ft) — нельзя удалить ФТ, пока на него ссылается задача.
+--
+-- core.tasks.id + core.business_requirements.id  ←  core.task_business_requirements  (M:N)
+--   Задача может ссылаться на несколько БТ; одно БТ может относиться к нескольким задачам.
+--   ON DELETE CASCADE (task) — при удалении задачи связи удаляются автоматически.
+--   ON DELETE RESTRICT (bt) — нельзя удалить БТ, пока на него ссылается задача.
+--
 -- Иерархия:
 --   Epic
 --    └── Story
@@ -251,4 +332,8 @@ INSERT INTO core.statuses (id, name) VALUES
 -- ## Changelog
 -- =============================================================================
 
--- 2026-04-16 | Alexey Gaybovich | initial schema version 1.0.0: core.statuses, core.epics, core.stories, core.tasks, core.functional_requirements, core.business_requirements, core.projects, core.entity_types, core.project_entities
+-- 2026-04-16 | Alexey Gaybovich | начальная схема: core.statuses, core.epics, core.stories, core.tasks, core.functional_requirements, core.business_requirements, core.projects, core.entity_types, core.project_entities
+-- 2026-04-18 | Alexey Gaybovich | добавлены колонки assignee, approver в core.epics и core.stories; approver в core.tasks
+-- 2026-04-19 | Alexey Gaybovich | добавлены plan, model в core.tasks
+-- 2026-04-19 | Alexey Gaybovich | создана core.task_functional_requirements (M:N task↔ft)
+-- 2026-04-19 | Alexey Gaybovich | создана core.task_business_requirements (M:N task↔bt)
