@@ -14,7 +14,9 @@ interface BusinessRequirementRepositoryInterface
 
     public function findById(int $id): BusinessRequirementDetail;
 
-    public function create(int $projectId, string $description): BusinessRequirement;
+    public function nextId(): int;
 
-    public function updateDescription(int $id, string $description): void;
+    public function create(BusinessRequirement $requirement, int $projectId): void;
+
+    public function update(int $id, string $description): void;
 }

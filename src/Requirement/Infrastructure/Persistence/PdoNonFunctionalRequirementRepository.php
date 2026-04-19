@@ -72,35 +72,52 @@ final readonly class PdoNonFunctionalRequirementRepository implements NonFunctio
         );
     }
 
-    public function create(int $projectId, NonFunctionalRequirementType $type, string $description, ?string $acceptanceCriteria): NonFunctionalRequirement
+    public function nextId(): int
     {
-        $idStmt = $this->pdo->query("SELECT nextval('core.non_functional_requirements_id_seq')");
-        $id = (int) $idStmt->fetchColumn();
-        $code = 'NFT-' . $id;
+        $stmt = $this->pdo->query("SELECT nextval('core.non_functional_requirements_id_seq')");
 
+        return (int) $stmt->fetchColumn();
+    }
+
+    public function create(NonFunctionalRequirement $requirement, int $projectId, ?string $acceptanceCriteria): void
+    {
         $this->pdo->prepare(
             'INSERT INTO core.non_functional_requirements (id, code, type, description, acceptance_criteria)
              VALUES (:id, :code, :type, :description, :acceptance_criteria)',
         )->execute([
-            'id' => $id,
-            'code' => $code,
-            'type' => $type->value,
-            'description' => $description,
+            'id' => $requirement->id,
+            'code' => $requirement->code,
+            'type' => $requirement->type->value,
+            'description' => $requirement->description,
             'acceptance_criteria' => $acceptanceCriteria,
         ]);
 
         $this->pdo->prepare(
             'INSERT INTO core.project_entities (project_id, entity_type_id, entity_id)
              VALUES (:project_id, (SELECT id FROM core.entity_types WHERE type = \'nft\'), :entity_id)',
-        )->execute(['project_id' => $projectId, 'entity_id' => $id]);
-
-        return new NonFunctionalRequirement($id, $code, $type, $description);
+        )->execute(['project_id' => $projectId, 'entity_id' => $requirement->id]);
     }
 
-    public function updateDescription(int $id, string $description): void
+    public function update(int $id, ?string $description, ?NonFunctionalRequirementType $type, ?string $acceptanceCriteria): void
     {
+        $sets = ['updated_at = now()'];
+        $params = ['id' => $id];
+
+        if (null !== $description) {
+            $sets[] = 'description = :description';
+            $params['description'] = $description;
+        }
+        if (null !== $type) {
+            $sets[] = 'type = :type';
+            $params['type'] = $type->value;
+        }
+        if (null !== $acceptanceCriteria) {
+            $sets[] = 'acceptance_criteria = :acceptance_criteria';
+            $params['acceptance_criteria'] = $acceptanceCriteria;
+        }
+
         $this->pdo->prepare(
-            'UPDATE core.non_functional_requirements SET description = :description, updated_at = now() WHERE id = :id',
-        )->execute(['description' => $description, 'id' => $id]);
+            'UPDATE core.non_functional_requirements SET ' . implode(', ', $sets) . ' WHERE id = :id',
+        )->execute($params);
     }
 }

@@ -89,25 +89,26 @@ final readonly class PdoBusinessRequirementRepository implements BusinessRequire
         );
     }
 
-    public function create(int $projectId, string $description): BusinessRequirement
+    public function nextId(): int
     {
-        $idStmt = $this->pdo->query("SELECT nextval('core.business_requirements_id_seq')");
-        $id = (int) $idStmt->fetchColumn();
-        $code = 'BT-' . $id;
+        $stmt = $this->pdo->query("SELECT nextval('core.business_requirements_id_seq')");
 
+        return (int) $stmt->fetchColumn();
+    }
+
+    public function create(BusinessRequirement $requirement, int $projectId): void
+    {
         $this->pdo->prepare(
             'INSERT INTO core.business_requirements (id, code, description) VALUES (:id, :code, :description)',
-        )->execute(['id' => $id, 'code' => $code, 'description' => $description]);
+        )->execute(['id' => $requirement->id, 'code' => $requirement->code, 'description' => $requirement->description]);
 
         $this->pdo->prepare(
             'INSERT INTO core.project_entities (project_id, entity_type_id, entity_id)
              VALUES (:project_id, (SELECT id FROM core.entity_types WHERE type = \'bt\'), :entity_id)',
-        )->execute(['project_id' => $projectId, 'entity_id' => $id]);
-
-        return new BusinessRequirement($id, $code, $description);
+        )->execute(['project_id' => $projectId, 'entity_id' => $requirement->id]);
     }
 
-    public function updateDescription(int $id, string $description): void
+    public function update(int $id, string $description): void
     {
         $this->pdo->prepare(
             'UPDATE core.business_requirements SET description = :description, updated_at = now() WHERE id = :id',

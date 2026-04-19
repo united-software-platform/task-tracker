@@ -89,25 +89,26 @@ final readonly class PdoFunctionalRequirementRepository implements FunctionalReq
         );
     }
 
-    public function create(int $projectId, string $description): FunctionalRequirement
+    public function nextId(): int
     {
-        $idStmt = $this->pdo->query("SELECT nextval('core.functional_requirements_id_seq')");
-        $id = (int) $idStmt->fetchColumn();
-        $code = 'FT-' . $id;
+        $stmt = $this->pdo->query("SELECT nextval('core.functional_requirements_id_seq')");
 
+        return (int) $stmt->fetchColumn();
+    }
+
+    public function create(FunctionalRequirement $requirement, int $projectId): void
+    {
         $this->pdo->prepare(
             'INSERT INTO core.functional_requirements (id, code, description) VALUES (:id, :code, :description)',
-        )->execute(['id' => $id, 'code' => $code, 'description' => $description]);
+        )->execute(['id' => $requirement->id, 'code' => $requirement->code, 'description' => $requirement->description]);
 
         $this->pdo->prepare(
             'INSERT INTO core.project_entities (project_id, entity_type_id, entity_id)
              VALUES (:project_id, (SELECT id FROM core.entity_types WHERE type = \'ft\'), :entity_id)',
-        )->execute(['project_id' => $projectId, 'entity_id' => $id]);
-
-        return new FunctionalRequirement($id, $code, $description);
+        )->execute(['project_id' => $projectId, 'entity_id' => $requirement->id]);
     }
 
-    public function updateDescription(int $id, string $description): void
+    public function update(int $id, string $description): void
     {
         $this->pdo->prepare(
             'UPDATE core.functional_requirements SET description = :description, updated_at = now() WHERE id = :id',
