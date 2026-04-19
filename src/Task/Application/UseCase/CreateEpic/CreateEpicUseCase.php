@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Task\Application\UseCase\CreateEpic;
 
 use App\Shared\Application\Service\CodeGeneratorInterface;
+use App\Task\Domain\Model\EntityType;
 use App\Task\Domain\Repository\EpicRepositoryInterface;
 use App\Task\Domain\Repository\ProjectRepositoryInterface;
 
@@ -19,7 +20,7 @@ final readonly class CreateEpicUseCase implements CreateEpicUseCaseInterface
     public function execute(CreateEpicInput $input): CreateEpicOutput
     {
         $project = $this->projects->findById($input->projectId);
-        $code = $this->codeGenerator->generate($project->code, 'epic');
+        $code = $this->codeGenerator->generate($project->code, EntityType::Epic->value);
 
         $epic = $this->epics->create($project->id, $code, $input->title, $input->description);
 
