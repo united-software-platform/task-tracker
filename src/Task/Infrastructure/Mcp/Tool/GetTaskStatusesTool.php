@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace App\Task\Infrastructure\Mcp\Tool;
 
+use App\Task\Application\UseCase\GetTaskStatuses\GetTaskStatusesUseCaseInterface;
 use Mcp\Capability\Attribute\McpTool;
 use Mcp\Schema\Content\TextContent;
 use Mcp\Schema\Result\CallToolResult;
-use PDO;
 
 final readonly class GetTaskStatusesTool
 {
     public function __construct(
-        private PDO $pdo,
+        private GetTaskStatusesUseCaseInterface $useCase,
     ) {}
 
     #[McpTool(
@@ -21,20 +21,11 @@ final readonly class GetTaskStatusesTool
     )]
     public function __invoke(): CallToolResult
     {
-        $stmt = $this->pdo->query('SELECT id, name FROM core.statuses ORDER BY id');
-
-        if (false === $stmt) {
-            return CallToolResult::error([
-                new TextContent('Не удалось выполнить запрос к core.statuses'),
-            ]);
-        }
-
-        /** @var list<array{id: int, name: string}> $rows */
-        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $output = $this->useCase->execute();
 
         return CallToolResult::success(
-            content: [new TextContent($rows)],
-            meta: ['count' => \count($rows)],
+            content: [new TextContent($output->statuses)],
+            meta: ['count' => \count($output->statuses)],
         );
     }
 }

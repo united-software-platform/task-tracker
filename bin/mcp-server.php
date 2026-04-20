@@ -30,6 +30,8 @@ use App\Task\Infrastructure\Persistence\PdoProjectEntityWriteRepository;
 use App\Task\Infrastructure\Persistence\PdoProjectRepository;
 use App\Task\Infrastructure\Persistence\PdoStoryReadRepository;
 use App\Task\Infrastructure\Persistence\PdoStoryWriteRepository;
+use App\Task\Application\UseCase\GetTaskStatuses\GetTaskStatusesUseCase;
+use App\Task\Infrastructure\Persistence\PdoStatusReadRepository;
 use App\Task\Infrastructure\Persistence\PdoTaskReadRepository;
 use App\Task\Infrastructure\Persistence\PdoTaskWriteRepository;
 use Mcp\Server;
@@ -63,11 +65,12 @@ $storyWriteRepository = new PdoStoryWriteRepository($pdo);
 $storyReadRepository  = new PdoStoryReadRepository($pdo);
 $taskWriteRepository  = new PdoTaskWriteRepository($pdo);
 $taskReadRepository   = new PdoTaskReadRepository($pdo);
+$statusReadRepository = new PdoStatusReadRepository($pdo);
 
 $server = Server::builder()
     ->setServerInfo(name: 'req-control', version: $appVersion, description: 'REQ-CONTROL MCP Server')
     ->addTool(
-        handler: new GetTaskStatusesTool($pdo)(...),
+        handler: new GetTaskStatusesTool(new GetTaskStatusesUseCase($statusReadRepository))(...),
         name: 'get_task_statuses',
         description: 'Возвращает список всех статусов задач из справочника core.statuses (id, name).',
     )
