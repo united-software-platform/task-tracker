@@ -38,7 +38,7 @@ final readonly class GetBusinessRequirementTool
                 'updated_at' => $r->updatedAt,
                 'functional_requirements' => array_map(
                     static fn (FunctionalRequirement $ft) => ['id' => $ft->id, 'code' => $ft->code, 'description' => $ft->description],
-                    $r->functionalRequirements,
+                    $output->functionalRequirements,
                 ),
             ])],
         );

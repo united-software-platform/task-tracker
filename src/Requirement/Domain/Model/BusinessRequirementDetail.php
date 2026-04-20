@@ -10,9 +10,8 @@ final readonly class BusinessRequirementDetail
         public int $id,
         public string $code,
         public string $description,
+        public int $projectId,
         public string $createdAt,
         public string $updatedAt,
-        /** @var list<FunctionalRequirement> */
-        public array $functionalRequirements,
     ) {}
 }

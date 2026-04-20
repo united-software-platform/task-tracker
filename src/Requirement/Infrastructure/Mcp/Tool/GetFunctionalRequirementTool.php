@@ -6,7 +6,7 @@ namespace App\Requirement\Infrastructure\Mcp\Tool;
 
 use App\Requirement\Application\UseCase\GetFunctionalRequirement\GetFunctionalRequirementInput;
 use App\Requirement\Application\UseCase\GetFunctionalRequirement\GetFunctionalRequirementUseCaseInterface;
-use App\Requirement\Domain\Model\RequirementTaskSummary;
+use App\Task\Domain\Model\TaskSummary;
 use Mcp\Capability\Attribute\McpTool;
 use Mcp\Capability\Attribute\Schema;
 use Mcp\Schema\Content\TextContent;
@@ -37,8 +37,8 @@ final readonly class GetFunctionalRequirementTool
                 'created_at' => $r->createdAt,
                 'updated_at' => $r->updatedAt,
                 'tasks' => array_map(
-                    static fn (RequirementTaskSummary $t) => ['id' => $t->id, 'status' => $t->status],
-                    $r->tasks,
+                    static fn (TaskSummary $t) => ['id' => $t->id, 'status' => $t->status],
+                    $output->tasks,
                 ),
             ])],
         );
