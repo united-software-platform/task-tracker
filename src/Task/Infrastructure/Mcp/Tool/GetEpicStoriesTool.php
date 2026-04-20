@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Task\Infrastructure\Mcp\Tool;
 
+use App\Task\Application\Dto\StorySummary;
 use App\Task\Application\UseCase\GetEpicStories\GetEpicStoriesInput;
 use App\Task\Application\UseCase\GetEpicStories\GetEpicStoriesUseCaseInterface;
-use App\Task\Domain\Model\StorySummary;
 use Mcp\Capability\Attribute\McpTool;
 use Mcp\Capability\Attribute\Schema;
 use Mcp\Schema\Content\TextContent;

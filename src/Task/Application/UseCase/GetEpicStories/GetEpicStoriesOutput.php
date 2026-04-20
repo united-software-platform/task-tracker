@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Task\Application\UseCase\GetEpicStories;
 
-use App\Task\Domain\Model\StorySummary;
+use App\Task\Application\Dto\StorySummary;
 
 final readonly class GetEpicStoriesOutput
 {

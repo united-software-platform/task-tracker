@@ -12,5 +12,6 @@ final readonly class UpdateTaskInput
         public ?string $description = null,
         public ?int $readiness = null,
         public ?int $status = null,
+        public ?string $model = null,
     ) {}
 }

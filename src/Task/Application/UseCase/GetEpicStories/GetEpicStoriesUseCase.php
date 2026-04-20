@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Task\Application\UseCase\GetEpicStories;
 
-use App\Task\Domain\Repository\StoryRepositoryInterface;
+use App\Task\Application\Repository\StoryReadRepositoryInterface;
 
 final readonly class GetEpicStoriesUseCase implements GetEpicStoriesUseCaseInterface
 {
     public function __construct(
-        private StoryRepositoryInterface $stories,
+        private StoryReadRepositoryInterface $stories,
     ) {}
 
     public function execute(GetEpicStoriesInput $input): GetEpicStoriesOutput

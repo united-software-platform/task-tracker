@@ -19,7 +19,7 @@ final readonly class GetTaskTool
 
     #[McpTool(
         name: 'get_task',
-        description: 'Возвращает детали задачи: id, title, description, статус, readiness %, created_at, updated_at.',
+        description: 'Возвращает детали задачи: id, title, description, статус, readiness %, model, created_at, updated_at.',
     )]
     public function __invoke(
         #[Schema(description: 'ID задачи', minimum: 1)]
@@ -36,6 +36,7 @@ final readonly class GetTaskTool
                 'description' => $t->description,
                 'status' => $t->status,
                 'readiness' => $t->readiness,
+                'model' => $t->model,
                 'created_at' => $t->createdAt,
                 'updated_at' => $t->updatedAt,
             ])],

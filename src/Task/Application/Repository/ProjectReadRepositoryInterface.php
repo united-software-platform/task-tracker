@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace App\Task\Domain\Repository;
+namespace App\Task\Application\Repository;
 
 use App\Task\Domain\Model\Project;
 
-interface ProjectRepositoryInterface
+interface ProjectReadRepositoryInterface
 {
     public function findById(int $id): Project;
 

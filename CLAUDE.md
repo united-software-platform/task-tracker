@@ -3,6 +3,7 @@
 @.claude/rules/php-style.md
 @.claude/rules/symfony.md
 @.claude/rules/clean-architecture.md
+@.claude/rules/cqrs.md
 
 ## Git коммиты
 

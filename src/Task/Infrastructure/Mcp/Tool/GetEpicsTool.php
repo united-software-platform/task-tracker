@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Task\Infrastructure\Mcp\Tool;
 
+use App\Task\Application\Dto\EpicSummary;
 use App\Task\Application\UseCase\GetEpics\GetEpicsUseCaseInterface;
-use App\Task\Domain\Model\EpicSummary;
 use Mcp\Capability\Attribute\McpTool;
 use Mcp\Schema\Content\TextContent;
 use Mcp\Schema\Result\CallToolResult;

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Task\Domain\Model;
+namespace App\Task\Application\Dto;
 
 final readonly class TaskSummary
 {

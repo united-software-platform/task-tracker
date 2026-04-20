@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Task\Infrastructure\Persistence;
 
+use App\Task\Application\Repository\ProjectReadRepositoryInterface;
 use App\Task\Domain\Model\Project;
-use App\Task\Domain\Repository\ProjectRepositoryInterface;
 use PDO;
 use RuntimeException;
 
-final readonly class PdoProjectRepository implements ProjectRepositoryInterface
+final readonly class PdoProjectRepository implements ProjectReadRepositoryInterface
 {
     public function __construct(
         private PDO $pdo,

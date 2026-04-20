@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Task\Infrastructure\Mcp\Tool;
 
+use App\Task\Application\Dto\TaskSummary;
 use App\Task\Application\UseCase\GetStoryTasks\GetStoryTasksInput;
 use App\Task\Application\UseCase\GetStoryTasks\GetStoryTasksUseCaseInterface;
-use App\Task\Domain\Model\TaskSummary;
 use Mcp\Capability\Attribute\McpTool;
 use Mcp\Capability\Attribute\Schema;
 use Mcp\Schema\Content\TextContent;

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Task\Application\UseCase\GetTask;
 
-use App\Task\Domain\Model\TaskDetail;
+use App\Task\Application\Dto\TaskDetail;
 
 final readonly class GetTaskOutput
 {

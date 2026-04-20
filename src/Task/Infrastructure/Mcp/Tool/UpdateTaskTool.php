@@ -19,7 +19,7 @@ final readonly class UpdateTaskTool
 
     #[McpTool(
         name: 'update_task',
-        description: 'Обновляет поля задачи: title, description, readiness (0–100), status из справочника. Передавай только изменяемые поля.',
+        description: 'Обновляет поля задачи: title, description, readiness (0–100), status из справочника, model. Передавай только изменяемые поля.',
     )]
     public function __invoke(
         #[Schema(description: 'ID задачи', minimum: 1)]
@@ -32,8 +32,10 @@ final readonly class UpdateTaskTool
         ?int $readiness = null,
         #[Schema(description: 'ID статуса из справочника', minimum: 1)]
         ?int $status = null,
+        #[Schema(description: 'Модель/описание решения задачи')]
+        ?string $model = null,
     ): CallToolResult {
-        $this->useCase->execute(new UpdateTaskInput($taskId, $title, $description, $readiness, $status));
+        $this->useCase->execute(new UpdateTaskInput($taskId, $title, $description, $readiness, $status, $model));
 
         return CallToolResult::success(
             content: [new TextContent(['updated' => true, 'task_id' => $taskId])],
