@@ -7,11 +7,11 @@ namespace App\Requirement\Infrastructure\Persistence;
 use App\Requirement\Domain\Model\NonFunctionalRequirement;
 use App\Requirement\Domain\Model\NonFunctionalRequirementDetail;
 use App\Requirement\Domain\Model\NonFunctionalRequirementType;
-use App\Requirement\Domain\Repository\NonFunctionalRequirementRepositoryInterface;
+use App\Requirement\Domain\Repository\NonFunctionalRequirementReadRepositoryInterface;
 use PDO;
 use RuntimeException;
 
-final readonly class PdoNonFunctionalRequirementRepository implements NonFunctionalRequirementRepositoryInterface
+final readonly class PdoNonFunctionalRequirementReadRepository implements NonFunctionalRequirementReadRepositoryInterface
 {
     public function __construct(
         private PDO $pdo,

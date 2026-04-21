@@ -6,11 +6,11 @@ namespace App\Requirement\Infrastructure\Persistence;
 
 use App\Requirement\Domain\Model\FunctionalRequirement;
 use App\Requirement\Domain\Model\FunctionalRequirementDetail;
-use App\Requirement\Domain\Repository\FunctionalRequirementRepositoryInterface;
+use App\Requirement\Domain\Repository\FunctionalRequirementReadRepositoryInterface;
 use PDO;
 use RuntimeException;
 
-final readonly class PdoFunctionalRequirementRepository implements FunctionalRequirementRepositoryInterface
+final readonly class PdoFunctionalRequirementReadRepository implements FunctionalRequirementReadRepositoryInterface
 {
     public function __construct(
         private PDO $pdo,

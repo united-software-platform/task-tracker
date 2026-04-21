@@ -22,7 +22,7 @@ final readonly class PdoStatusReadRepository implements StatusReadRepositoryInte
         $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
         return array_map(
-            static fn(array $row) => new StatusView($row['id'], $row['name']),
+            static fn (array $row) => new StatusView($row['id'], $row['name']),
             $rows,
         );
     }

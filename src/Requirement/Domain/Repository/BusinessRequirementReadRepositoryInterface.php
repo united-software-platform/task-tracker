@@ -7,7 +7,7 @@ namespace App\Requirement\Domain\Repository;
 use App\Requirement\Domain\Model\BusinessRequirement;
 use App\Requirement\Domain\Model\BusinessRequirementDetail;
 
-interface BusinessRequirementRepositoryInterface
+interface BusinessRequirementReadRepositoryInterface
 {
     /** @return list<BusinessRequirement> */
     public function listByProjectId(int $projectId): array;

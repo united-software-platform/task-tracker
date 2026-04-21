@@ -7,7 +7,7 @@ namespace App\Requirement\Domain\Repository;
 use App\Requirement\Domain\Model\FunctionalRequirement;
 use App\Requirement\Domain\Model\FunctionalRequirementDetail;
 
-interface FunctionalRequirementRepositoryInterface
+interface FunctionalRequirementReadRepositoryInterface
 {
     /** @return list<FunctionalRequirement> */
     public function listByProjectId(int $projectId): array;

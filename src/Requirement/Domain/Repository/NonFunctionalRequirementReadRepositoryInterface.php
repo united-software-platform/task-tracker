@@ -7,7 +7,7 @@ namespace App\Requirement\Domain\Repository;
 use App\Requirement\Domain\Model\NonFunctionalRequirement;
 use App\Requirement\Domain\Model\NonFunctionalRequirementDetail;
 
-interface NonFunctionalRequirementRepositoryInterface
+interface NonFunctionalRequirementReadRepositoryInterface
 {
     /** @return list<NonFunctionalRequirement> */
     public function listByProjectId(int $projectId): array;

@@ -29,11 +29,11 @@ use App\Requirement\Infrastructure\Mcp\Tool\GetProjectNonFunctionalRequirementsT
 use App\Requirement\Infrastructure\Mcp\Tool\UpdateBusinessRequirementTool;
 use App\Requirement\Infrastructure\Mcp\Tool\UpdateFunctionalRequirementTool;
 use App\Requirement\Infrastructure\Mcp\Tool\UpdateNonFunctionalRequirementTool;
-use App\Requirement\Infrastructure\Persistence\PdoBusinessRequirementRepository;
+use App\Requirement\Infrastructure\Persistence\PdoBusinessRequirementReadRepository;
 use App\Requirement\Infrastructure\Persistence\PdoBusinessRequirementWriteRepository;
-use App\Requirement\Infrastructure\Persistence\PdoFunctionalRequirementRepository;
+use App\Requirement\Infrastructure\Persistence\PdoFunctionalRequirementReadRepository;
 use App\Requirement\Infrastructure\Persistence\PdoFunctionalRequirementWriteRepository;
-use App\Requirement\Infrastructure\Persistence\PdoNonFunctionalRequirementRepository;
+use App\Requirement\Infrastructure\Persistence\PdoNonFunctionalRequirementReadRepository;
 use App\Requirement\Infrastructure\Persistence\PdoNonFunctionalRequirementWriteRepository;
 use App\Task\Application\UseCase\CreateEpic\CreateEpicUseCase;
 use App\Task\Application\UseCase\CreateStory\CreateStoryUseCase;
@@ -89,11 +89,11 @@ $codeGenerator          = new PostgresCodeGenerator($pdo, new EntityCodeGenerato
 $projectRepository      = new PdoProjectRepository($pdo);
 $projectEntityRepository = new PdoProjectEntityWriteRepository($pdo);
 
-$ftRepository       = new PdoFunctionalRequirementRepository($pdo);
+$ftReadRepository   = new PdoFunctionalRequirementReadRepository($pdo);
 $ftWriteRepository  = new PdoFunctionalRequirementWriteRepository($pdo);
-$btRepository       = new PdoBusinessRequirementRepository($pdo);
+$btReadRepository   = new PdoBusinessRequirementReadRepository($pdo);
 $btWriteRepository  = new PdoBusinessRequirementWriteRepository($pdo);
-$nftRepository      = new PdoNonFunctionalRequirementRepository($pdo);
+$nftReadRepository  = new PdoNonFunctionalRequirementReadRepository($pdo);
 $nftWriteRepository = new PdoNonFunctionalRequirementWriteRepository($pdo);
 $epicWriteRepository  = new PdoEpicWriteRepository($pdo);
 $epicReadRepository   = new PdoEpicReadRepository($pdo);
@@ -151,12 +151,12 @@ $server = Server::builder()
         description: 'Обновляет поля задачи: title, description, readiness (0–100), status из справочника. Передавай только изменяемые поля.',
     )
     ->addTool(
-        handler: new GetProjectFunctionalRequirementsTool(new GetProjectFunctionalRequirementsUseCase($ftRepository))(...),
+        handler: new GetProjectFunctionalRequirementsTool(new GetProjectFunctionalRequirementsUseCase($ftReadRepository))(...),
         name: 'get_project_functional_requirements',
         description: 'Возвращает плоский список функциональных требований (ФТ) проекта: id, код FT-XXX, краткое описание.',
     )
     ->addTool(
-        handler: new GetFunctionalRequirementTool(new GetFunctionalRequirementUseCase($ftRepository, $taskRepository))(...),
+        handler: new GetFunctionalRequirementTool(new GetFunctionalRequirementUseCase($ftReadRepository, $taskReadRepository))(...),
         name: 'get_functional_requirement',
         description: 'Возвращает детали функционального требования: код FT-XXX, полное описание, связанные задачи проекта (ids, статусы), created_at, updated_at.',
     )
@@ -171,12 +171,12 @@ $server = Server::builder()
         description: 'Обновляет функциональное требование (ФТ). Обновляет поле description и updated_at.',
     )
     ->addTool(
-        handler: new GetProjectBusinessRequirementsTool(new GetProjectBusinessRequirementsUseCase($btRepository))(...),
+        handler: new GetProjectBusinessRequirementsTool(new GetProjectBusinessRequirementsUseCase($btReadRepository))(...),
         name: 'get_project_business_requirements',
         description: 'Возвращает плоский список бизнес-требований (БТ) проекта: id, код BT-XXX, краткое описание.',
     )
     ->addTool(
-        handler: new GetBusinessRequirementTool(new GetBusinessRequirementUseCase($btRepository, $ftRepository))(...),
+        handler: new GetBusinessRequirementTool(new GetBusinessRequirementUseCase($btReadRepository, $ftReadRepository))(...),
         name: 'get_business_requirement',
         description: 'Возвращает детали бизнес-требования: код BT-XXX, полное описание, связанные ФТ проекта (если есть), created_at, updated_at.',
     )
@@ -191,12 +191,12 @@ $server = Server::builder()
         description: 'Обновляет бизнес-требование (БТ). Обновляет поле description и updated_at.',
     )
     ->addTool(
-        handler: new GetProjectNonFunctionalRequirementsTool(new GetProjectNonFunctionalRequirementsUseCase($nftRepository))(...),
+        handler: new GetProjectNonFunctionalRequirementsTool(new GetProjectNonFunctionalRequirementsUseCase($nftReadRepository))(...),
         name: 'get_project_non_functional_requirements',
         description: 'Возвращает список нефункциональных требований (НФТ) проекта: id, код NFT-XXX, тип, краткое описание.',
     )
     ->addTool(
-        handler: new GetNonFunctionalRequirementTool(new GetNonFunctionalRequirementUseCase($nftRepository))(...),
+        handler: new GetNonFunctionalRequirementTool(new GetNonFunctionalRequirementUseCase($nftReadRepository))(...),
         name: 'get_non_functional_requirement',
         description: 'Возвращает детали нефункционального требования: код NFT-XXX, тип, полное описание, критерий приёмки, created_at, updated_at.',
     )

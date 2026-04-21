@@ -6,11 +6,11 @@ namespace App\Requirement\Infrastructure\Persistence;
 
 use App\Requirement\Domain\Model\BusinessRequirement;
 use App\Requirement\Domain\Model\BusinessRequirementDetail;
-use App\Requirement\Domain\Repository\BusinessRequirementRepositoryInterface;
+use App\Requirement\Domain\Repository\BusinessRequirementReadRepositoryInterface;
 use PDO;
 use RuntimeException;
 
-final readonly class PdoBusinessRequirementRepository implements BusinessRequirementRepositoryInterface
+final readonly class PdoBusinessRequirementReadRepository implements BusinessRequirementReadRepositoryInterface
 {
     public function __construct(
         private PDO $pdo,
