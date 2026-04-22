@@ -29,7 +29,7 @@ final readonly class PdoNonFunctionalRequirementWriteRepository implements NonFu
             'acceptance_criteria' => $requirement->acceptanceCriteria,
         ]);
 
-        /** @var array{id: int, code: string, type: string, description: string, acceptance_criteria: string|null} $row */
+        /** @var array{id: int, code: string, type: string, description: string, acceptance_criteria: null|string} $row */
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
 
         return new NonFunctionalRequirement(
