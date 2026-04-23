@@ -1,7 +1,7 @@
 {
     "name": "req-control/app",
     "description": "Requirements Control Platform",
-    "version": "1.0.23",
+    "version": "1.0.24",
     "type": "project",
     "require": {
         "php": "^8.4",
