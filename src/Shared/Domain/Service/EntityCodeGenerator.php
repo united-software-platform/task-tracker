@@ -4,18 +4,14 @@ declare(strict_types=1);
 
 namespace App\Shared\Domain\Service;
 
-use InvalidArgumentException;
+use App\Shared\Domain\ValueObject\EntityType;
 
 final class EntityCodeGenerator
 {
-    public function __invoke(string $projectCode, string $entityType, int $id): string
+    public function __invoke(EntityType $entityType, int $id): string
     {
-        if (mb_strlen($projectCode) > 4) {
-            throw new InvalidArgumentException(
-                sprintf('projectCode must be 4 characters or less, "%s" given', $projectCode),
-            );
-        }
+        $formatted = $id < 1000 ? sprintf('%03d', $id) : (string) $id;
 
-        return sprintf('%s-%s-%d', $projectCode, $entityType, $id);
+        return sprintf('%s-%s', $entityType->value, $formatted);
     }
 }
