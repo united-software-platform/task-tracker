@@ -53,8 +53,10 @@ use App\Task\Infrastructure\Mcp\Tool\GetStoryTasksTool;
 use App\Task\Infrastructure\Mcp\Tool\GetTaskStatusesTool;
 use App\Task\Infrastructure\Mcp\Tool\GetTaskTool;
 use App\Task\Infrastructure\Mcp\Tool\UpdateTaskTool;
+use App\Requirement\Domain\Model\RequirementEntityTypes;
 use App\Shared\Domain\Service\EntityCodeGenerator;
 use App\Shared\Infrastructure\Persistence\PostgresCodeGenerator;
+use App\Task\Domain\Model\EntityTypes;
 use App\Task\Infrastructure\Persistence\PdoEpicReadRepository;
 use App\Task\Infrastructure\Persistence\PdoEpicWriteRepository;
 use App\Task\Infrastructure\Persistence\PdoProjectEntityWriteRepository;
@@ -89,6 +91,8 @@ $pdo = new PDO(
 $codeGenerator          = new PostgresCodeGenerator($pdo, new EntityCodeGenerator());
 $projectRepository      = new PdoProjectRepository($pdo);
 $projectEntityRepository = new PdoProjectEntityWriteRepository($pdo);
+$taskEntityTypes = new EntityTypes();
+$requirementEntityTypes = new RequirementEntityTypes();
 
 $ftReadRepository   = new PdoFunctionalRequirementReadRepository($pdo);
 $ftWriteRepository  = new PdoFunctionalRequirementWriteRepository($pdo);
@@ -113,17 +117,17 @@ $server = Server::builder()
         description: 'Возвращает список всех статусов задач из справочника core.statuses (id, name).',
     )
     ->addTool(
-        handler: new CreateEpicTool(new CreateEpicUseCase($epicWriteRepository, $projectRepository, $projectEntityRepository, $codeGenerator))(...),
+        handler: new CreateEpicTool(new CreateEpicUseCase($epicWriteRepository, $projectRepository, $projectEntityRepository, $codeGenerator, $taskEntityTypes))(...),
         name: 'create_epic',
         description: 'Создаёт новый эпик. Возвращает id и title созданного эпика.',
     )
     ->addTool(
-        handler: new CreateStoryTool(new CreateStoryUseCase($storyWriteRepository, $projectRepository, $projectEntityRepository, $codeGenerator))(...),
+        handler: new CreateStoryTool(new CreateStoryUseCase($storyWriteRepository, $projectRepository, $projectEntityRepository, $codeGenerator, $taskEntityTypes))(...),
         name: 'create_story',
         description: 'Создаёт новую стори внутри эпика. Возвращает id и title созданной стори.',
     )
     ->addTool(
-        handler: new CreateTaskTool(new CreateTaskUseCase($taskWriteRepository, $projectRepository, $projectEntityRepository, $codeGenerator))(...),
+        handler: new CreateTaskTool(new CreateTaskUseCase($taskWriteRepository, $projectRepository, $projectEntityRepository, $codeGenerator, $taskEntityTypes))(...),
         name: 'create_task',
         description: 'Создаёт новую задачу внутри стори. Статус устанавливается «Новая» (1). Возвращает id, title и status.',
     )
@@ -163,7 +167,7 @@ $server = Server::builder()
         description: 'Возвращает детали функционального требования: код FT-XXX, полное описание, связанные задачи проекта (ids, статусы), created_at, updated_at.',
     )
     ->addTool(
-        handler: new CreateFunctionalRequirementTool(new CreateFunctionalRequirementUseCase($ftWriteRepository, $projectRepository, $entityLinkRepository, $codeGenerator))(...),
+        handler: new CreateFunctionalRequirementTool(new CreateFunctionalRequirementUseCase($ftWriteRepository, $entityLinkRepository, $codeGenerator, $requirementEntityTypes))(...),
         name: 'create_functional_requirement',
         description: 'Создаёт функциональное требование (ФТ) и привязывает его к проекту. Возвращает id и код FT-XXX.',
     )
@@ -183,7 +187,7 @@ $server = Server::builder()
         description: 'Возвращает детали бизнес-требования: код BT-XXX, полное описание, связанные ФТ проекта (если есть), created_at, updated_at.',
     )
     ->addTool(
-        handler: new CreateBusinessRequirementTool(new CreateBusinessRequirementUseCase($btWriteRepository, $projectRepository, $entityLinkRepository, $codeGenerator))(...),
+        handler: new CreateBusinessRequirementTool(new CreateBusinessRequirementUseCase($btWriteRepository, $entityLinkRepository, $codeGenerator, $requirementEntityTypes))(...),
         name: 'create_business_requirement',
         description: 'Создаёт бизнес-требование (БТ) и привязывает его к проекту. Возвращает id и код BT-XXX.',
     )
@@ -203,7 +207,7 @@ $server = Server::builder()
         description: 'Возвращает детали нефункционального требования: код NFT-XXX, тип, полное описание, критерий приёмки, created_at, updated_at.',
     )
     ->addTool(
-        handler: new CreateNonFunctionalRequirementTool(new CreateNonFunctionalRequirementUseCase($nftWriteRepository, $projectRepository, $entityLinkRepository, $codeGenerator))(...),
+        handler: new CreateNonFunctionalRequirementTool(new CreateNonFunctionalRequirementUseCase($nftWriteRepository, $entityLinkRepository, $codeGenerator, $requirementEntityTypes))(...),
         name: 'create_non_functional_requirement',
         description: 'Создаёт нефункциональное требование (НФТ) и привязывает его к проекту. Возвращает id и код NFT-XXX.',
     )
